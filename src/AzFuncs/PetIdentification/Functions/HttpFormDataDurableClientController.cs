@@ -68,7 +68,7 @@ namespace PetIdentification.Functions
 
             var signalRRequest = new SignalRRequest()
             {
-                AdoptionCentres = adoptionCentres,
+                Message = JsonConvert.SerializeObject(adoptionCentres),
                 UserId = durableReqDto.SignalRUserId
             };
 

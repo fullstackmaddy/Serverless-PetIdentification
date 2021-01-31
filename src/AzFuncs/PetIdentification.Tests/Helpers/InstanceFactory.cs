@@ -8,10 +8,12 @@ using System.IO;
 using System.Text;
 using PetIdentification.Dtos;
 using PetIdentification.Models;
+using AutoMapper;
+using PetIdentification.Profiles;
 
 namespace PetIdentification.Tests.Helpers
 {
-    public class TestFactory
+    public class InstanceFactory
     {
         public static List<PredictionResult> PredictedTags = new List<PredictionResult>()
         {
@@ -47,6 +49,24 @@ namespace PetIdentification.Tests.Helpers
             Qualities = "Some quality",
             Temprament = "Quiet, Loyal",
         };
+
+        public static IMapper CreateMapper()
+        {
+            var adoptionCentreProfile = new AdoptionCentreProfile();
+            var breedInfoProfile = new BreedInfoProfile();
+            
+            var profiles = new List<Profile>()
+            {
+                new PredictionResultProfile(),
+                new AdoptionCentreProfile(),
+                new BreedInfoProfile(),
+                new PetIdentificationCanonicalProfile()
+            };
+
+            var config = new MapperConfiguration(x => x.AddProfiles(profiles));
+
+            return config.CreateMapper();
+        }
 
         public static IConfigurationRoot BuildConfiguration(Dictionary<string, string> configurationItems)
         {

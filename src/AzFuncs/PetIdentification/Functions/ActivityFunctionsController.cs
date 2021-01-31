@@ -93,6 +93,7 @@ namespace PetIdentification.Functions
             ILogger logger
         )
         {
+
             logger.LogInformation("Sending out signal R push notification");
 
             await signalRMessages.AddAsync(
@@ -101,7 +102,7 @@ namespace PetIdentification.Functions
                     // the message will only be sent to this user ID
                     UserId = request.UserId,
                     Target = "sendPetAdoptionCentres",
-                    Arguments = new[] { JsonConvert.SerializeObject(request.AdoptionCentres) }
+                    Arguments = new[] { request.Message}
                 });
 
             return true;

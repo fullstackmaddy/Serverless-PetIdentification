@@ -16,7 +16,7 @@ namespace PetIdentification.Tests.UnitTests
 {
     public class ActivityFunctionsControllerTests
     {
-        private readonly Mapper _mapper;
+        private readonly IMapper _mapper;
         private readonly Mock<IPredictionHelper> _predictionHelper;
         private readonly Mock<IAdoptionCentreDbHelper> _adoptionCentreDbHelper;
         private readonly Mock<IBreedInfoDbHelper> _breedInfoDbHelper;
@@ -24,36 +24,28 @@ namespace PetIdentification.Tests.UnitTests
 
         public ActivityFunctionsControllerTests()
         {
-            PredictionResultProfile val = new PredictionResultProfile();
-            List<Profile> mappingProfiles = new List<Profile>
-            {
-                new PredictionResultProfile(),
-                new AdoptionCentreProfile()
-            };
-            var config = new MapperConfiguration(x =>
-            {
-                x.AddProfiles((IEnumerable<Profile>)mappingProfiles);
-            });
 
-            _mapper = new Mapper(config);
+
+            _mapper = InstanceFactory.CreateMapper();
+
             _predictionHelper = new Mock<IPredictionHelper>();
 
             _predictionHelper.Setup(
                 x => x.PredictBreedAsync(It.IsAny<string>())
             )
-            .ReturnsAsync(TestFactory.PredictedTags);
+            .ReturnsAsync(InstanceFactory.PredictedTags);
 
             _adoptionCentreDbHelper = new Mock<IAdoptionCentreDbHelper>();
 
             _adoptionCentreDbHelper.Setup(
                 x => x.GetAdoptionCentresByBreedAsync(It.IsAny<string>())
-            ).ReturnsAsync(TestFactory.AdoptionCentres);
+            ).ReturnsAsync(InstanceFactory.AdoptionCentres);
 
             _breedInfoDbHelper = new Mock<IBreedInfoDbHelper>();
 
             _breedInfoDbHelper.Setup(
                 x => x.GetBreedInformationAsync(It.IsAny<string>())
-                ).ReturnsAsync(TestFactory.BreedInfo);
+                ).ReturnsAsync(InstanceFactory.BreedInfo);
 
             _funcController = new ActivityFunctionsController(
                     adoptionCentreDbHelper: _adoptionCentreDbHelper.Object,
@@ -68,7 +60,7 @@ namespace PetIdentification.Tests.UnitTests
         {
 
             var result = await _funcController
-            .PredictStrayPetBreedAsync(string.Empty, TestFactory.CreateLogger(LoggerTypes.List));
+            .PredictStrayPetBreedAsync(string.Empty, InstanceFactory.CreateLogger(LoggerTypes.List));
 
             //Assertions
 
@@ -83,7 +75,7 @@ namespace PetIdentification.Tests.UnitTests
         public async Task Does_LocateAdoptionCentresByBreedAsync_Return_List_Of_AdoptionCentres()
         {
             var result = await _funcController
-            .LocateAdoptionCentresByBreedAsync(string.Empty, TestFactory.CreateLogger(LoggerTypes.List));
+            .LocateAdoptionCentresByBreedAsync(string.Empty, InstanceFactory.CreateLogger(LoggerTypes.List));
 
             //Assertions
 
@@ -95,11 +87,11 @@ namespace PetIdentification.Tests.UnitTests
         [Fact]
         public async Task Does_GetBreedInformationAsync_Return_Breed_Information()
         {
-            var logger = TestFactory.CreateLogger(LoggerTypes.List);
+            var logger = InstanceFactory.CreateLogger(LoggerTypes.List);
 
             var result = await _funcController
                 .GetBreedInformationASync(string.Empty,
-                TestFactory.CreateLogger());
+                InstanceFactory.CreateLogger());
 
             result.Should().BeOfType<BreedInfo>();
             (result as BreedInfo).Breed.Should().BeEquivalentTo("pug");

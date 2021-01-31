@@ -15,19 +15,8 @@ namespace PetIdentification.Tests.UnitTests
 
         public PetIdentificationCanonicalMapperTests()
         {
-            var adoptionCentreProfile = new AdoptionCentreProfile();
-            var breedInfoProfile = new BreedInfoProfile();
 
-            var profiles = new List<Profile>()
-            {
-                new AdoptionCentreProfile(),
-                new BreedInfoProfile(),
-                new PetIdentificationCanonicalProfile()
-            };
-
-            var config = new MapperConfiguration(x => x.AddProfiles(profiles));
-
-            _mapper = config.CreateMapper();
+            _mapper = InstanceFactory.CreateMapper();
         }
 
         [Fact]
@@ -36,8 +25,8 @@ namespace PetIdentification.Tests.UnitTests
             PetIdentificationCanonical petIdentificationCanonical =
                 new PetIdentificationCanonical()
                 {
-                    AdoptionCentres = TestFactory.AdoptionCentres,
-                    BreedInformation = TestFactory.BreedInfo
+                    AdoptionCentres = InstanceFactory.AdoptionCentres,
+                    BreedInformation = InstanceFactory.BreedInfo
                 };
 
             var result = _mapper

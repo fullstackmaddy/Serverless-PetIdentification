@@ -4,6 +4,7 @@ using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using Microsoft.Azure.WebJobs.Extensions.EventGrid;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using PetIdentification.Constants;
 using PetIdentification.Dtos;
@@ -54,7 +55,7 @@ namespace PetIdentification.Functions
 
             var signalRRequest = new SignalRRequest()
             {
-                AdoptionCentres = adoptionCentres,
+                Message = JsonConvert.SerializeObject(adoptionCentres),
                 UserId = durableReqDto.SignalRUserId
             };
 
