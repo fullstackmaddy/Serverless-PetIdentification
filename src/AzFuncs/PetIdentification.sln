@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30907.101
+MinimumVisualStudioVersion = 15.0.26124.0
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PetIdentification", "PetIdentification\PetIdentification.csproj", "{FD1CAC06-82E9-405E-90DD-17F4318C7CB6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PetAdoption.Tests", "PetAdoption.Tests\PetAdoption.Tests.csproj", "{58D263EA-B489-4313-A047-91E6F90D5045}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{FD1CAC06-82E9-405E-90DD-17F4318C7CB6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FD1CAC06-82E9-405E-90DD-17F4318C7CB6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FD1CAC06-82E9-405E-90DD-17F4318C7CB6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FD1CAC06-82E9-405E-90DD-17F4318C7CB6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{58D263EA-B489-4313-A047-91E6F90D5045}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{58D263EA-B489-4313-A047-91E6F90D5045}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{58D263EA-B489-4313-A047-91E6F90D5045}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{58D263EA-B489-4313-A047-91E6F90D5045}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {ECE2757A-B95B-495C-9932-484ABAB676BC}
+	EndGlobalSection
+EndGlobal
