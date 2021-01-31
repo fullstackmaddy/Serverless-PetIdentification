@@ -173,6 +173,12 @@ namespace PetIdentification.Functions
         )
         {
             logger.LogInformation("Started the execution of the event grid triggered durable function");
+            if (string.IsNullOrWhiteSpace(request.ContentType) ||
+               (request.ContentType != "application/json"))
+            {
+                return new UnsupportedMediaTypeResult();
+            }
+
 
             var requestBody = string.Empty;
 

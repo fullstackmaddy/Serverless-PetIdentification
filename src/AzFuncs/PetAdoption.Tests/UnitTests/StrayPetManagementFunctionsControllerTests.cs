@@ -12,6 +12,7 @@ using PetIdentification.Models;
 using PetIdentification.Profiles;
 using PetAdoption.Tests.Helpers;
 using Xunit;
+using Microsoft.AspNetCore.Mvc;
 
 namespace PetAdoption.Tests.UnitTests
 {
@@ -89,8 +90,10 @@ namespace PetAdoption.Tests.UnitTests
                 x => x.CallActivityAsync<bool>("PushMessagesToSignalRHub",
                 It.IsAny<SignalRRequest>())
             ).ReturnsAsync(true);
-            
+
             #endregion
+
+            _durableClient = new Mock<IDurableClient>();
 
         }
     
@@ -135,7 +138,23 @@ namespace PetAdoption.Tests.UnitTests
         }
 
 
-    
+        [Fact]
+        public async Task Does_HTTP_DurableClient_Return_Unsupported_MediaType_When_Content_Is_not_Json()
+        {
+
+            var result = await _funcController.StrayPetManagementDurableHttpClient(
+                TestFactory.CreateHttpRequest(string.Empty
+                , string.Empty), _durableClient.Object, TestFactory.CreateLogger());
+
+            //Assertions
+            result.Should().BeOfType<UnsupportedMediaTypeResult>();
+
+            (result as UnsupportedMediaTypeResult).StatusCode.Should().Be(415);
+        }
+
+
+
+
     }
 
 }
