@@ -26,9 +26,10 @@ namespace PetIdentification.Functions
     public class StaryPetManagementFunctionsController
     {
         #region Properties
-        private readonly IAdoptionCentreDbHelper _dbHelper;
+        private readonly IAdoptionCentreDbHelper _adoptionCentreDbHelper;
         private readonly IPredictionHelper _predictionHelper;
         private readonly IMapper _mapper;
+        private readonly IBreedInfoDbHelper _breedInfoDbHelper;
 
         #endregion
 
@@ -36,17 +37,19 @@ namespace PetIdentification.Functions
 
         public StaryPetManagementFunctionsController
         (
-            IAdoptionCentreDbHelper dbHelper,
+            IAdoptionCentreDbHelper adoptionCentreDbHelper,
+            IBreedInfoDbHelper breedInfoDbHelper,
             IPredictionHelper predictionHelper,
             IMapper mapper
         )
         {
 
-            _dbHelper = dbHelper ?? 
-            throw new ArgumentNullException(nameof(dbHelper));
+            _adoptionCentreDbHelper = adoptionCentreDbHelper ?? 
+            throw new ArgumentNullException(nameof(adoptionCentreDbHelper));
             _predictionHelper = predictionHelper ?? 
             throw new ArgumentNullException(nameof(predictionHelper));
-
+            _breedInfoDbHelper = breedInfoDbHelper ??
+                throw new ArgumentNullException(nameof(breedInfoDbHelper));
             _mapper = mapper ?? 
             throw new ArgumentNullException(nameof(mapper));
         }
@@ -75,12 +78,24 @@ namespace PetIdentification.Functions
         )
         {
             logger.LogInformation("Started the execution of the LocateAdoptionCentresByBreedAsync activity function");
-            var result = await _dbHelper.GetAdoptionCentresByBreedAsync(breed);
+            var result = await _adoptionCentreDbHelper.GetAdoptionCentresByBreedAsync(breed);
 
             logger.LogInformation("Finished the execution of LocateAdoptionCentresByBreedAsync activity function");
 
             return result.ToList();
 
+        }
+
+        [FunctionName("GetBreedInformationASync")]
+        public async Task<BreedInfo> GetBreedInformationASync(
+            [ActivityTrigger] string breed,
+            ILogger logger)
+        {
+            logger.LogInformation("Started the execution of the GetBreedInformationASync activity function");
+
+            var result = await _breedInfoDbHelper.GetBreedInformationAsync(breed);
+
+            return result;
         }
 
         [FunctionName("PushMessagesToSignalRHub")]

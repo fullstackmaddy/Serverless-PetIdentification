@@ -9,6 +9,6 @@ namespace PetIdentification.Interfaces
     public interface IBreedInfoDbHelper
     {
 
-        public Task<BreedInfo> GetBreedInformation(string breed);
+        public Task<BreedInfo> GetBreedInformationAsync(string breed);
     }
 }

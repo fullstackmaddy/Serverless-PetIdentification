@@ -22,7 +22,7 @@ namespace PetIdentification.Helpers.Implementations
                 throw new ArgumentNullException(nameof(documentClient));
 
         }
-        public async Task<BreedInfo> GetBreedInformation(string breed)
+        public async Task<BreedInfo> GetBreedInformationAsync(string breed)
         {
             Uri collectionUri = UriFactory.CreateDocumentCollectionUri(
                  CosmosDBConstants.DBName,

@@ -20,7 +20,9 @@ namespace PetAdoption.Tests.UnitTests
     {
         private readonly Mock<IPredictionHelper> _predictionHelper;
 
-        private readonly Mock<IAdoptionCentreDbHelper> _dbHelper;
+        private readonly Mock<IAdoptionCentreDbHelper> _adoptionCentreDbHelper;
+
+        private readonly Mock<IBreedInfoDbHelper> _breednfoDbHelper;
 
         private readonly IMapper _mapper;
 
@@ -51,14 +53,23 @@ namespace PetAdoption.Tests.UnitTests
             )
             .ReturnsAsync(TestFactory.PredictedTags);
 
-            _dbHelper = new Mock<IAdoptionCentreDbHelper>();
+            _adoptionCentreDbHelper = new Mock<IAdoptionCentreDbHelper>();
 
-            _dbHelper.Setup(
+            _adoptionCentreDbHelper.Setup(
                 x => x.GetAdoptionCentresByBreedAsync(It.IsAny<string>())
             ).ReturnsAsync(TestFactory.AdoptionCentres);
 
+            _breednfoDbHelper = new Mock<IBreedInfoDbHelper>();
+
+            _breednfoDbHelper.Setup(
+                x => x.GetBreedInformationAsync(It.IsAny<string>())
+                ).ReturnsAsync(TestFactory.BreedInfo);
+
+
+
             _funcController = new StaryPetManagementFunctionsController(
-                _dbHelper.Object,
+                _adoptionCentreDbHelper.Object,
+                _breednfoDbHelper.Object,
                 _predictionHelper.Object,
                 _mapper
             );
@@ -124,6 +135,20 @@ namespace PetAdoption.Tests.UnitTests
             result.Should().BeOfType<List<AdoptionCentre>>();
             result.Should().HaveCount(1);
             result[0].ShelteredBreed.Should().Be("Pug");
+        }
+
+        [Fact]
+        public async Task Does_GetBreedInformationAsync_Return_Breed_Information()
+        {
+            var logger = TestFactory.CreateLogger(LoggerTypes.List);
+
+            var result = await _funcController
+                .GetBreedInformationASync(string.Empty,
+                TestFactory.CreateLogger());
+
+            result.Should().BeOfType<BreedInfo>();
+            (result as BreedInfo).Breed.Should().BeEquivalentTo("pug");
+
         }
 
         [Fact]

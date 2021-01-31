@@ -39,7 +39,15 @@ namespace PetAdoption.Tests.Helpers
                 ZipCode = "ABC123"
             }
         };
-        
+
+        public static BreedInfo BreedInfo = new BreedInfo()
+        {
+            Breed = "pug",
+            LifeExpectancy = "8 to 12 years",
+            Qualities = "Some quality",
+            Temprament = "Quiet, Loyal",
+        };
+
         public static IConfigurationRoot BuildConfiguration(Dictionary<string, string> configurationItems)
         {
             var configuration = new ConfigurationBuilder()
