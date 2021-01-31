@@ -61,6 +61,25 @@ namespace PetIdentification.Helpers
             
         }
 
+        public async Task<IEnumerable<PredictionResult>> PredictBreedAsync(Stream s)
+        {
+            Guid projectId = new Guid(
+                _config["CustomVisionProjectId"].ToString()
+            );
+
+            string iterationName = _config["CustomVisionPublishedIterationName"].ToString();
+
+            var result = await _predictionClient.ClassifyImageAsync(
+                projectId,
+                iterationName,
+                s);
+
+            return _mapper.Map<List<PredictionModel>, List<PredictionResult>>
+           (
+               result.Predictions.ToList()
+           );
+        }
+
         #endregion
     }
 }
