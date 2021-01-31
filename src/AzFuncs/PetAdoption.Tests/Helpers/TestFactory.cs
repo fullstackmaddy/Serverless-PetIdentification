@@ -42,7 +42,7 @@ namespace PetAdoption.Tests.Helpers
 
         public static BreedInfo BreedInfo = new BreedInfo()
         {
-            Breed = "pug",
+            Breed = "Pug",
             LifeExpectancy = "8 to 12 years",
             Qualities = "Some quality",
             Temprament = "Quiet, Loyal",

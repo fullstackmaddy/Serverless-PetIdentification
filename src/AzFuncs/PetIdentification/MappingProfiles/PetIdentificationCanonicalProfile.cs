@@ -7,12 +7,11 @@ using System.Text;
 
 namespace PetIdentification.Profiles
 {
-    public class BreedInfoProfile : Profile
+    public class PetIdentificationCanonicalProfile : Profile
     {
-        public BreedInfoProfile()
+        public PetIdentificationCanonicalProfile()
         {
-            CreateMap<BreedInfoDto, BreedInfo>();
-            CreateMap<BreedInfo, BreedInfoDto>();
+            CreateMap<PetIdentificationCanonical, PetIdentificationCanonicalDto>();
         }
     }
 }

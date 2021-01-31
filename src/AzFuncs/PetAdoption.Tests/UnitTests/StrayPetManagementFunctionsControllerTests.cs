@@ -26,7 +26,7 @@ namespace PetAdoption.Tests.UnitTests
 
         private readonly IMapper _mapper;
 
-        private readonly StaryPetManagementFunctionsController _funcController;
+        private readonly PetIdentificationManagementFunctionsController _funcController;
 
         private readonly Mock<IDurableOrchestrationContext> _orchestrationContext;
 
@@ -67,7 +67,7 @@ namespace PetAdoption.Tests.UnitTests
 
 
 
-            _funcController = new StaryPetManagementFunctionsController(
+            _funcController = new PetIdentificationManagementFunctionsController(
                 _adoptionCentreDbHelper.Object,
                 _breednfoDbHelper.Object,
                 _predictionHelper.Object,
@@ -147,7 +147,7 @@ namespace PetAdoption.Tests.UnitTests
                 TestFactory.CreateLogger());
 
             result.Should().BeOfType<BreedInfo>();
-            (result as BreedInfo).Breed.Should().BeEquivalentTo("pug");
+            (result as BreedInfo).Breed.Should().BeEquivalentTo("Pug");
 
         }
 
