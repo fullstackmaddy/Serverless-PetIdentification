@@ -58,7 +58,7 @@ namespace PetIdentification.Functions
             //var imageUrl = context.GetInput<string>();
 
             var predictions = await context.CallActivityAsync<List<PredictionResult>>
-            (ActivityFunctionsConstants.IdentifyStrayPetBreedAsync,
+            (ActivityFunctionsConstants.IdentifyStrayPetBreedWithUrlAsync,
             durableReqDto.BlobUrl.ToString());
 
             var highestPrediction = predictions.OrderBy(x => x.Probability).FirstOrDefault();

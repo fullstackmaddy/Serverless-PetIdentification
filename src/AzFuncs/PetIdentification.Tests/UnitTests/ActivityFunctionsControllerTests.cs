@@ -8,6 +8,7 @@ using PetIdentification.Profiles;
 using PetIdentification.Tests.Helpers;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using Xunit;
@@ -35,6 +36,11 @@ namespace PetIdentification.Tests.UnitTests
             )
             .ReturnsAsync(InstanceFactory.PredictedTags);
 
+            _predictionHelper.Setup(
+                x => x.PredictBreedAsync(It.IsAny<Stream>())
+            )
+            .ReturnsAsync(InstanceFactory.PredictedTags);
+
             _adoptionCentreDbHelper = new Mock<IAdoptionCentreDbHelper>();
 
             _adoptionCentreDbHelper.Setup(
@@ -56,11 +62,11 @@ namespace PetIdentification.Tests.UnitTests
         }
 
         [Fact]
-        public async Task Does_IdentifyStrayPetBreedAsync_Return_Prediction_Result()
+        public async Task Does_IdentifyStrayPetBreedWithUrlAsync_Return_Prediction_Result()
         {
 
             var result = await _funcController
-            .PredictStrayPetBreedAsync(string.Empty, InstanceFactory.CreateLogger(LoggerTypes.List));
+            .IdentifyStrayPetBreedWithUrlAsync(string.Empty, InstanceFactory.CreateLogger(LoggerTypes.List));
 
             //Assertions
 
@@ -70,6 +76,28 @@ namespace PetIdentification.Tests.UnitTests
             result[0].TagName.Should().Be("pug");
 
         }
+
+        [Fact]
+        public async Task Does_IdentifyStrayPetBreedWithStreamAsync_Return_Prediction_Result()
+        {
+            List<PredictionResult> result;
+
+            using (Stream s = new MemoryStream())
+            {
+                 result = await _funcController
+                    .IdentifyStrayPetBreedWithStreamAsync(s, InstanceFactory.CreateLogger(LoggerTypes.List));
+            }
+            
+
+            //Assertions
+
+            result.Should().BeOfType<List<PredictionResult>>();
+            result.Should().HaveCount(1);
+            result[0].Probability.Should().Be(1.0);
+            result[0].TagName.Should().Be("pug");
+
+        }
+
 
         [Fact]
         public async Task Does_LocateAdoptionCentresByBreedAsync_Return_List_Of_AdoptionCentres()

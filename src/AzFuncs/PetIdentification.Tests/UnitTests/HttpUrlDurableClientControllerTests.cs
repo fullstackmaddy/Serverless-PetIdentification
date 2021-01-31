@@ -42,7 +42,7 @@ namespace PetIdentification.Tests.UnitTests
             );
             _orchestrationContext.Setup(
                 x => x.CallActivityAsync<List<PredictionResult>>
-                (ActivityFunctionsConstants.IdentifyStrayPetBreedAsync, It.IsAny<string>())
+                (ActivityFunctionsConstants.IdentifyStrayPetBreedWithUrlAsync, It.IsAny<string>())
 
             ).ReturnsAsync(InstanceFactory.PredictedTags);
 

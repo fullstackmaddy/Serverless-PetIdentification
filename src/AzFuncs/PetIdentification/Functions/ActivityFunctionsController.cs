@@ -9,6 +9,7 @@ using PetIdentification.Interfaces;
 using PetIdentification.Models;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -45,19 +46,34 @@ namespace PetIdentification.Functions
         #endregion
 
         #region ActivityFunctions
-        [FunctionName(ActivityFunctionsConstants.IdentifyStrayPetBreedAsync)]
-        public async Task<List<PredictionResult>> PredictStrayPetBreedAsync(
+        [FunctionName(ActivityFunctionsConstants.IdentifyStrayPetBreedWithUrlAsync)]
+        public async Task<List<PredictionResult>> IdentifyStrayPetBreedWithUrlAsync(
             [ActivityTrigger] string imageUrl,
             ILogger logger)
         {
-            logger.LogInformation($"Started the execution of IdentifyStrayPetBreedAsync function");
+            logger.LogInformation($"Started the execution of IdentifyStrayPetBreedWithUrlAsync function");
 
             var result = await _predictionHelper.PredictBreedAsync(imageUrl);
 
-            logger.LogInformation($"Finshed calling the PredictBreedAsync function from prediction helper");
+            logger.LogInformation($"Finshed calling the IdentifyStrayPetBreedWithUrlAsync function from prediction helper");
 
             return result.ToList(); ;
         }
+
+        [FunctionName(ActivityFunctionsConstants.IdentifyStrayPetBreedWithStreamAsync)]
+        public async Task<List<PredictionResult>> IdentifyStrayPetBreedWithStreamAsync(
+        [ActivityTrigger] Stream s,
+        ILogger logger)
+        {
+            logger.LogInformation($"Started the execution of IdentifyStrayPetBreedWithStreamAsync function");
+
+            var result = await _predictionHelper.PredictBreedAsync(s);
+
+            logger.LogInformation($"Finshed calling the IdentifyStrayPetBreedWithStreamAsync function from prediction helper");
+
+            return result.ToList(); ;
+        }
+
 
         [FunctionName(ActivityFunctionsConstants.LocateAdoptionCentresByBreedAsync)]
         public async Task<List<AdoptionCentre>> LocateAdoptionCentresByBreedAsync(
@@ -102,7 +118,7 @@ namespace PetIdentification.Functions
                     // the message will only be sent to this user ID
                     UserId = request.UserId,
                     Target = "sendPetAdoptionCentres",
-                    Arguments = new[] { request.Message}
+                    Arguments = new[] { request.Message }
                 });
 
             return true;

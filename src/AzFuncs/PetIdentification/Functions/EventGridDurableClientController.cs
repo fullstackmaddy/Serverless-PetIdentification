@@ -41,7 +41,7 @@ namespace PetIdentification.Functions
             var durableReqDto = context.GetInput<DurableRequestDto>();
 
             var predictions = await context.CallActivityAsync<List<PredictionResult>>
-            (ActivityFunctionsConstants.IdentifyStrayPetBreedAsync, 
+            (ActivityFunctionsConstants.IdentifyStrayPetBreedWithUrlAsync, 
             durableReqDto.BlobUrl.ToString());
 
             var highestPrediction = predictions.OrderBy(x => x.Probability).FirstOrDefault();
