@@ -6,6 +6,8 @@ namespace PetIdentification.Constants
         public const string DBName = "PetAdoption";
         
         public const string AdoptionCentreCollectionName = "AdoptionCentres";
+
+        public const string BreedInfoCollectionName = "BreedInformation";
     }
     
 }
