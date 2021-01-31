@@ -2,7 +2,7 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 
-namespace PetAdoption.Tests.Helpers
+namespace PetIdentification.Tests.Helpers
 {
     public class ListLogger : ILogger
     {

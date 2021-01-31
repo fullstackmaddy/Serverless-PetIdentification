@@ -26,101 +26,91 @@ namespace PetIdentification.Functions
     public class StaryPetManagementFunctionsController
     {
         #region Properties
-        private readonly IAdoptionCentreDbHelper _adoptionCentreDbHelper;
-        private readonly IPredictionHelper _predictionHelper;
+        
         private readonly IMapper _mapper;
-        private readonly IBreedInfoDbHelper _breedInfoDbHelper;
-
+        
         #endregion
 
         #region Constructors
 
         public StaryPetManagementFunctionsController
         (
-            IAdoptionCentreDbHelper adoptionCentreDbHelper,
-            IBreedInfoDbHelper breedInfoDbHelper,
-            IPredictionHelper predictionHelper,
-            IMapper mapper
+            IMapper mapper 
         )
         {
 
-            _adoptionCentreDbHelper = adoptionCentreDbHelper ?? 
-            throw new ArgumentNullException(nameof(adoptionCentreDbHelper));
-            _predictionHelper = predictionHelper ?? 
-            throw new ArgumentNullException(nameof(predictionHelper));
-            _breedInfoDbHelper = breedInfoDbHelper ??
-                throw new ArgumentNullException(nameof(breedInfoDbHelper));
             _mapper = mapper ?? 
             throw new ArgumentNullException(nameof(mapper));
+
         }
 
         #endregion
 
-        #region ActivityFunctions
-        [FunctionName("IdentifyStrayPetBreedAsync")]
-        public async Task<List<PredictionResult>> PredictStrayPetBreedAsync(
-            [ActivityTrigger]string imageUrl,
-            ILogger logger)
-        {
-            logger.LogInformation($"Started the execution of IdentifyStrayPetBreedAsync function");
+        //#region ActivityFunctions
+        //[FunctionName("IdentifyStrayPetBreedAsync")]
+        //public async Task<List<PredictionResult>> PredictStrayPetBreedAsync(
+        //    [ActivityTrigger]string imageUrl,
+        //    ILogger logger)
+        //{
+        //    logger.LogInformation($"Started the execution of IdentifyStrayPetBreedAsync function");
 
-            var result = await _predictionHelper.PredictBreedAsync(imageUrl);
+        //    var result = await _predictionHelper.PredictBreedAsync(imageUrl);
             
-            logger.LogInformation($"Finshed calling the PredictBreedAsync function from prediction helper");
+        //    logger.LogInformation($"Finshed calling the PredictBreedAsync function from prediction helper");
 
-            return result.ToList();;
-        }
+        //    return result.ToList();;
+        //}
 
-        [FunctionName("LocateAdoptionCentresByBreedAsync")]
-        public async Task<List<AdoptionCentre>> LocateAdoptionCentresByBreedAsync(
-            [ActivityTrigger] string breed,
-            ILogger logger
-        )
-        {
-            logger.LogInformation("Started the execution of the LocateAdoptionCentresByBreedAsync activity function");
-            var result = await _adoptionCentreDbHelper.GetAdoptionCentresByBreedAsync(breed);
+        //[FunctionName("LocateAdoptionCentresByBreedAsync")]
+        //public async Task<List<AdoptionCentre>> LocateAdoptionCentresByBreedAsync(
+        //    [ActivityTrigger] string breed,
+        //    ILogger logger
+        //)
+        //{
+        //    logger.LogInformation("Started the execution of the LocateAdoptionCentresByBreedAsync activity function");
+        //    var result = await _adoptionCentreDbHelper.GetAdoptionCentresByBreedAsync(breed);
 
-            logger.LogInformation("Finished the execution of LocateAdoptionCentresByBreedAsync activity function");
+        //    logger.LogInformation("Finished the execution of LocateAdoptionCentresByBreedAsync activity function");
 
-            return result.ToList();
+        //    return result.ToList();
 
-        }
+        //}
 
-        [FunctionName("GetBreedInformationASync")]
-        public async Task<BreedInfo> GetBreedInformationASync(
-            [ActivityTrigger] string breed,
-            ILogger logger)
-        {
-            logger.LogInformation("Started the execution of the GetBreedInformationASync activity function");
+        //[FunctionName("GetBreedInformationASync")]
+        //public async Task<BreedInfo> GetBreedInformationASync(
+        //    [ActivityTrigger] string breed,
+        //    ILogger logger)
+        //{
+        //    logger.LogInformation("Started the execution of the GetBreedInformationASync activity function");
 
-            var result = await _breedInfoDbHelper.GetBreedInformationAsync(breed);
+        //    var result = await _breedInfoDbHelper.GetBreedInformationAsync(breed);
 
-            return result;
-        }
+        //    return result;
+        //}
 
-        [FunctionName("PushMessagesToSignalRHub")]
-        public async Task<bool> PushMessagesToSignalRHub(
-            [ActivityTrigger] SignalRRequest request,
-            [SignalR(HubName = SignalRConstants.HubName )]IAsyncCollector<SignalRMessage> signalRMessages,
-            ILogger logger
-        )
-        {
-            logger.LogInformation("Sending out signal R push notification");
+        //[FunctionName("PushMessagesToSignalRHub")]
+        //public async Task<bool> PushMessagesToSignalRHub(
+        //    [ActivityTrigger] SignalRRequest request,
+        //    [SignalR(HubName = SignalRConstants.HubName )]IAsyncCollector<SignalRMessage> signalRMessages,
+        //    ILogger logger
+        //)
+        //{
+        //    logger.LogInformation("Sending out signal R push notification");
             
-            await signalRMessages.AddAsync(
-                new SignalRMessage 
-                {
-                    // the message will only be sent to this user ID
-                    UserId = request.UserId,
-                    Target = "sendPetAdoptionCentres",
-                    Arguments = new [] { JsonConvert.SerializeObject(request.AdoptionCentres) }
-                });
+        //    await signalRMessages.AddAsync(
+        //        new SignalRMessage 
+        //        {
+        //            // the message will only be sent to this user ID
+        //            UserId = request.UserId,
+        //            Target = "sendPetAdoptionCentres",
+        //            Arguments = new [] { JsonConvert.SerializeObject(request.AdoptionCentres) }
+        //        });
                 
-            return true;
+        //    return true;
 
-        }
+        //}
 
-        #endregion
+        //#endregion
 
         #region Orchestration
         [FunctionName("StrayPetManagementOrchestration")]

@@ -9,13 +9,13 @@ using System.Text;
 using PetIdentification.Dtos;
 using PetIdentification.Models;
 
-namespace PetAdoption.Tests.Helpers
+namespace PetIdentification.Tests.Helpers
 {
     public class TestFactory
     {
         public static List<PredictionResult> PredictedTags = new List<PredictionResult>()
         {
-            new PredictionResult(){Probability = 1.0, TagName = "dog-pug"}
+            new PredictionResult(){Probability = 1.0, TagName = "pug"}
                 
         };
 
@@ -24,7 +24,7 @@ namespace PetAdoption.Tests.Helpers
             new AdoptionCentreDto(){
                 Address = "Dummy Address",
                 Name = "Pug Adoption Centre",
-                ShelteredBreed = "Pug",
+                ShelteredBreed = "pug",
                 ZipCode = "ABC123"
             }
 
@@ -35,14 +35,14 @@ namespace PetAdoption.Tests.Helpers
             new AdoptionCentre(){
                 Address = "Dummy Address",
                 Name = "Pug Adoption Centre",
-                ShelteredBreed = "Pug",
+                ShelteredBreed = "pug",
                 ZipCode = "ABC123"
             }
         };
 
         public static BreedInfo BreedInfo = new BreedInfo()
         {
-            Breed = "Pug",
+            Breed = "pug",
             LifeExpectancy = "8 to 12 years",
             Qualities = "Some quality",
             Temprament = "Quiet, Loyal",

@@ -1,16 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Collections.Generic;
 using Xunit;
 using FluentAssertions;
 using AutoMapper;
 using PetIdentification.Profiles;
-using System.Threading.Tasks;
 using PetIdentification.Models;
-using PetAdoption.Tests.Helpers;
+using PetIdentification.Tests.Helpers;
 using PetIdentification.Dtos;
 
-namespace PetAdoption.Tests.UnitTests
+namespace PetIdentification.Tests.UnitTests
 {
     public class PetIdentificationCanonicalMapperTests
     {

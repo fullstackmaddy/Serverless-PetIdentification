@@ -1,4 +1,4 @@
-namespace PetAdoption.Tests.Helpers
+namespace PetIdentification.Tests.Helpers
 {
     public enum LoggerTypes
     {

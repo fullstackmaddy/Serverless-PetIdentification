@@ -1,6 +1,6 @@
 using System;
 
-namespace PetAdoption.Tests.Helpers
+namespace PetIdentification.Tests.Helpers
 {
     /// <summary>
     /// Required by the ListLogger as Ilogger needs a scope.
