@@ -1,7 +1,30 @@
 ﻿@page "/"
+@inject NavigationManager navigationManager
 
-<h1>Hello, world!</h1>
+<div class="row">
+    <div class="col-1">
+        <h2>#makeadifference</h2>
+        <h3>Save an innocent life</h3>
+        <p>Like humans, pets will have their moments when they are feeling sad, or depressed or perhaps just bored and
+            in need of attention. Fortunately, our pets know that affection from their owners will make them feel
+            better, which not only benefits our pets, but benefits us too! As we give our pet love and attention, it
+            makes us feel important, useful and encourages positive emotions in us</p>
+        <button type="button" @onclick="NavigateToAboutUsComponent">Know More
+            
+            <img src="images/arrow.png">
+        </button>
+    </div>
+    <div class="col-2">
+        <img src="images/friends.png" class="friends" />
+        <div class="color-box"></div>
+    </div>
+</div>
+<pet_rescue_ui.Components.Disclaimer></pet_rescue_ui.Components.Disclaimer>
 
-Welcome to your new app.
 
-<SurveyPrompt Title="How is Blazor working for you?" />
+@code{
+    private void NavigateToAboutUsComponent()
+    {
+        navigationManager.NavigateTo("aboutus");
+    }
+}

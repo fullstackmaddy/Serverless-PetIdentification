@@ -1,37 +1,35 @@
-﻿<div class="top-row pl-4 navbar navbar-dark">
-    <a class="navbar-brand" href="">PetIdentificationUI</a>
-    <button class="navbar-toggler" @onclick="ToggleNavMenu">
-        <span class="navbar-toggler-icon"></span>
-    </button>
+﻿@inject IJSRuntime jsr
+
+<div class="navbar">
+    <NavLink href="">
+        <img src="images/logo.png" class="logo">
+    </NavLink>
+    
+    <nav>
+        <ul id="menuList">
+            <li>
+                <NavLink href="findthestray" class="menu-font">IDENTIFY A STRAY</NavLink>
+            <!--<a href="counter" class="menu-font">IDENTIFY A STRAY</a>-->
+            </li>
+            <li>
+                <!--<a href="fetchdata" class="menu-font">ADOPT A PET</a>-->
+                <NavLink href="adoptapet" class="menu-font">ADOPT A PET</NavLink>
+            </li>
+            <li>
+                <!--<a href="fetchdata" class="menu-font">ADOPT A PET</a>-->
+                <NavLink href="aboutus" class="menu-font">WHO ARE WE?</NavLink>
+            </li>
+        </ul>
+    </nav>
+
+    <img src="images/menu.png" class="menu-icon" onclick="ToggleMenuParent()" />
 </div>
 
-<div class="@NavMenuCssClass" @onclick="ToggleNavMenu">
-    <ul class="nav flex-column">
-        <li class="nav-item px-3">
-            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                <span class="oi oi-home" aria-hidden="true"></span> Home
-            </NavLink>
-        </li>
-        <li class="nav-item px-3">
-            <NavLink class="nav-link" href="counter">
-                <span class="oi oi-plus" aria-hidden="true"></span> Counter
-            </NavLink>
-        </li>
-        <li class="nav-item px-3">
-            <NavLink class="nav-link" href="fetchdata">
-                <span class="oi oi-list-rich" aria-hidden="true"></span> Fetch data
-            </NavLink>
-        </li>
-    </ul>
-</div>
-
-@code {
-    private bool collapseNavMenu = true;
-
-    private string NavMenuCssClass => collapseNavMenu ? "collapse" : null;
-
-    private void ToggleNavMenu()
+@code
+{
+    private async Task ToggleMenuParent()
     {
-        collapseNavMenu = !collapseNavMenu;
+        await jsr.InvokeVoidAsync("togglemenuParent");
     }
+
 }
