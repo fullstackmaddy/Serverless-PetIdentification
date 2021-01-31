@@ -46,16 +46,34 @@ namespace PetIdentification.Functions
 
             var highestPrediction = predictions.OrderBy(x => x.Probability).FirstOrDefault();
 
-            var adoptionCentres = _mapper.Map<List<AdoptionCentre>, List<AdoptionCentreDto>>(
-                await context.CallActivityAsync<List<AdoptionCentre>>(
+            string tagName = highestPrediction.TagName;
+
+            Task<List<AdoptionCentre>> getAdoptionCentres = context.CallActivityAsync<List<AdoptionCentre>>(
                     ActivityFunctionsConstants.LocateAdoptionCentresByBreedAsync,
-                    highestPrediction.TagName
-                )
-            );
+                    tagName
+                );
+
+            Task<BreedInfo> getBreedInfo = context.CallActivityAsync<BreedInfo>(
+                    ActivityFunctionsConstants.GetBreedInformationASync,
+                    tagName
+                );
+
+            await Task.WhenAll(getAdoptionCentres, getBreedInfo);
+
+            var petIdentificationCanonical = new
+                PetIdentificationCanonical
+            {
+                AdoptionCentres = getAdoptionCentres.Result,
+                BreedInformation = getBreedInfo.Result
+            };
+
+            var petIdentificationCanonicalDto = _mapper
+                .Map<PetIdentificationCanonical, PetIdentificationCanonicalDto>
+                (petIdentificationCanonical);
 
             var signalRRequest = new SignalRRequest()
             {
-                Message = JsonConvert.SerializeObject(adoptionCentres),
+                Message = JsonConvert.SerializeObject(petIdentificationCanonicalDto),
                 UserId = durableReqDto.SignalRUserId
             };
 

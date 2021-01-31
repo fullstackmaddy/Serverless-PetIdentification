@@ -9,6 +9,7 @@ using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using PetIdentification.Constants;
 using PetIdentification.Dtos;
 using PetIdentification.Models;
 using System;
@@ -56,19 +57,40 @@ namespace PetIdentification.Functions
             //var imageUrl = context.GetInput<string>();
 
             var predictions = await context.CallActivityAsync<List<PredictionResult>>
-            ("IdentifyStrayPetBreedAsync", durableReqDto.BlobUrl.ToString());
+            (
+                ActivityFunctionsConstants.IdentifyStrayPetBreedAsync,
+                durableReqDto.BlobUrl.ToString());
 
             var highestPrediction = predictions.OrderBy(x => x.Probability).FirstOrDefault();
 
-            var adoptionCentres = _mapper.Map<List<AdoptionCentre>, List<AdoptionCentreDto>>(
-                await context.CallActivityAsync<List<AdoptionCentre>>(
-                    "LocateAdoptionCentresByBreedAsync", highestPrediction.TagName
-                )
-            );
+            string tagName = highestPrediction.TagName;
+
+            Task<List<AdoptionCentre>> getAdoptionCentres = context.CallActivityAsync<List<AdoptionCentre>>(
+                    ActivityFunctionsConstants.LocateAdoptionCentresByBreedAsync,
+                    tagName
+                );
+
+            Task<BreedInfo> getBreedInfo = context.CallActivityAsync<BreedInfo>(
+                    ActivityFunctionsConstants.GetBreedInformationASync,
+                    tagName
+                );
+
+            await Task.WhenAll(getAdoptionCentres, getBreedInfo);
+
+            var petIdentificationCanonical = new
+                PetIdentificationCanonical
+            {
+                AdoptionCentres = getAdoptionCentres.Result,
+                BreedInformation = getBreedInfo.Result
+            };
+
+            var petIdentificationCanonicalDto = _mapper
+                .Map<PetIdentificationCanonical, PetIdentificationCanonicalDto>
+                (petIdentificationCanonical);
 
             var signalRRequest = new SignalRRequest()
             {
-                Message = JsonConvert.SerializeObject(adoptionCentres),
+                Message = JsonConvert.SerializeObject(petIdentificationCanonicalDto),
                 UserId = durableReqDto.SignalRUserId
             };
 
