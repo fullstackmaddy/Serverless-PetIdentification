@@ -22,6 +22,7 @@ namespace PetIdentification.Functions
         private readonly IAdoptionCentreDbHelper _adoptionCentreDbHelper;
         private readonly IPredictionHelper _predictionHelper;
         private readonly IBreedInfoDbHelper _breedInfoDbHelper;
+        private readonly IBlobHelper _blobHelper;
 
         #endregion
 
@@ -31,7 +32,8 @@ namespace PetIdentification.Functions
         (
             IAdoptionCentreDbHelper adoptionCentreDbHelper,
             IBreedInfoDbHelper breedInfoDbHelper,
-            IPredictionHelper predictionHelper
+            IPredictionHelper predictionHelper,
+            IBlobHelper blobHelper
         )
         {
 
@@ -41,6 +43,8 @@ namespace PetIdentification.Functions
             throw new ArgumentNullException(nameof(predictionHelper));
             _breedInfoDbHelper = breedInfoDbHelper ??
                 throw new ArgumentNullException(nameof(breedInfoDbHelper));
+            _blobHelper = blobHelper ??
+                throw new ArgumentNullException(nameof(blobHelper));
         }
 
         #endregion
@@ -122,6 +126,24 @@ namespace PetIdentification.Functions
                 });
 
             return true;
+
+        }
+
+        [FunctionName(ActivityFunctionsConstants.GetSignalUserIdFromBlobMetadataAsync)]
+        public async Task<string> GetSignalUserIdFromBlobMetadataAsync(
+            [ActivityTrigger] string blobUrl,
+            ILogger logger)
+        {
+            logger.LogInformation("Retreiving the blob metadata using blob url");
+
+            var blobMetadata = await _blobHelper.GetBlobMetaDataAsync(blobUrl);
+
+            var signalRUserId =
+                blobMetadata.Where(x => x.Key == SignalRConstants.CustomHeaderName)
+                .FirstOrDefault()
+                .Value;
+
+            return signalRUserId;
 
         }
 

@@ -22,6 +22,7 @@ namespace PetIdentification.Functions
 
         private readonly IMapper _mapper;
 
+        private string _signalRUserId;
         public EventGridDurableClientController(IMapper mapper)
         {
             _mapper = mapper ??
@@ -38,15 +39,30 @@ namespace PetIdentification.Functions
         {
             logger.LogInformation("Starting the execution of the orchestration: EventGridDurableOrchestration");
 
-            var durableReqDto = context.GetInput<DurableRequestDto>();
+            var imageBlobUrl = context.GetInput<string>();
 
             var predictions = await context.CallActivityAsync<List<PredictionResult>>
-            (ActivityFunctionsConstants.IdentifyStrayPetBreedWithUrlAsync, 
-            durableReqDto.BlobUrl.ToString());
+            (ActivityFunctionsConstants.IdentifyStrayPetBreedWithUrlAsync,
+            imageBlobUrl);
 
-            var highestPrediction = predictions.OrderBy(x => x.Probability).FirstOrDefault();
+
+            Task<List<PredictionResult>> getPredictionResults = context.CallActivityAsync<List<PredictionResult>>
+                (ActivityFunctionsConstants.IdentifyStrayPetBreedWithUrlAsync,
+                imageBlobUrl);
+
+            Task<string> getSignalRUserId = context.CallActivityAsync<string>(
+                    ActivityFunctionsConstants.GetSignalUserIdFromBlobMetadataAsync,
+                    imageBlobUrl
+                );
+
+            await Task.WhenAll(new List<Task>() { getPredictionResults, getSignalRUserId });
+
+            var highestPrediction = getPredictionResults
+                .Result.OrderBy(x => x.Probability).FirstOrDefault();
 
             string tagName = highestPrediction.TagName;
+
+            _signalRUserId = getSignalRUserId.Result;
 
             Task<List<AdoptionCentre>> getAdoptionCentres = context.CallActivityAsync<List<AdoptionCentre>>(
                     ActivityFunctionsConstants.LocateAdoptionCentresByBreedAsync,
@@ -74,7 +90,7 @@ namespace PetIdentification.Functions
             var signalRRequest = new SignalRRequest()
             {
                 Message = JsonConvert.SerializeObject(petIdentificationCanonicalDto),
-                UserId = durableReqDto.SignalRUserId
+                UserId = _signalRUserId
             };
 
             await context.CallActivityAsync(ActivityFunctionsConstants.PushMessagesToSignalRHub, signalRRequest);
@@ -99,8 +115,8 @@ namespace PetIdentification.Functions
             StorageBlobCreatedEventData blobCreatedEventData =
                 ((JObject)eventGridEvent.Data).ToObject<StorageBlobCreatedEventData>();
 
-           await client
-            .StartNewAsync("EventGridDurableOrchestration", instanceId: new Guid().ToString(), blobCreatedEventData.Url);
+            await client
+             .StartNewAsync("EventGridDurableOrchestration", instanceId: new Guid().ToString(), blobCreatedEventData.Url);
 
         }
         #endregion

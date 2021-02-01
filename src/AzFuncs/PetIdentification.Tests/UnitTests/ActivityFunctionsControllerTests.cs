@@ -21,8 +21,9 @@ namespace PetIdentification.Tests.UnitTests
         private readonly Mock<IPredictionHelper> _predictionHelper;
         private readonly Mock<IAdoptionCentreDbHelper> _adoptionCentreDbHelper;
         private readonly Mock<IBreedInfoDbHelper> _breedInfoDbHelper;
+        private readonly Mock<IBlobHelper> _blobHelper;
         private readonly ActivityFunctionsController _funcController;
-
+        
         public ActivityFunctionsControllerTests()
         {
 
@@ -50,10 +51,13 @@ namespace PetIdentification.Tests.UnitTests
                 x => x.GetBreedInformationAsync(It.IsAny<string>())
                 ).ReturnsAsync(InstanceFactory.BreedInfo);
 
+            _blobHelper = new Mock<IBlobHelper>();
+
             _funcController = new ActivityFunctionsController(
                     adoptionCentreDbHelper: _adoptionCentreDbHelper.Object,
                     breedInfoDbHelper: _breedInfoDbHelper.Object,
-                    predictionHelper: _predictionHelper.Object
+                    predictionHelper: _predictionHelper.Object,
+                    blobHelper: _blobHelper.Object
                 );
 
         }

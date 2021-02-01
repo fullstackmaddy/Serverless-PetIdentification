@@ -50,9 +50,16 @@ namespace PetIdentification.Tests.UnitTests
                 ).ReturnsAsync(InstanceFactory.AdoptionCentres);
 
             _orchestrationContext.Setup(
-                x => x.CallActivityAsync<bool>("PushMessagesToSignalRHub",
+                x => x.CallActivityAsync<bool>(ActivityFunctionsConstants.PushMessagesToSignalRHub,
                     It.IsAny<SignalRRequest>())
                 ).ReturnsAsync(true);
+
+            _orchestrationContext.Setup(
+                x => x.CallActivityAsync<string>(
+                        ActivityFunctionsConstants.GetSignalUserIdFromBlobMetadataAsync,
+                        It.IsAny<string>()
+                    )
+                ).ReturnsAsync("1234");
 
             _funcController = new EventGridDurableClientController(
                 _mapper);

@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace PetIdentification.Constants
+﻿namespace PetIdentification.Constants
 {
     public static class ActivityFunctionsConstants
     {
@@ -15,5 +11,7 @@ namespace PetIdentification.Constants
         public const string GetBreedInformationASync = "GetBreedInformationASync";
 
         public const string PushMessagesToSignalRHub = "PushMessagesToSignalRHub";
+
+        public const string GetSignalUserIdFromBlobMetadataAsync = "GetSignalUserIdFromBlobMetadataAsync";
     }
 }

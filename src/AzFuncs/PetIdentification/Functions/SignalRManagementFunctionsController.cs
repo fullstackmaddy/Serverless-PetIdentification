@@ -27,7 +27,7 @@ namespace PetIdentification.Functions
             IBinder binder)
         {
             //read the headers for http request
-            var userId = request.Headers["x-blazor-app-session-id"];
+            var userId = request.Headers[SignalRConstants.CustomHeaderName];
 
             SignalRConnectionInfoAttribute connInfoAttribute = new
                 SignalRConnectionInfoAttribute()
