@@ -1,7 +1,9 @@
 ﻿using AutoMapper;
 using FluentAssertions;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
+using Microsoft.Extensions.Primitives;
 using Moq;
 using PetIdentification.Constants;
 using PetIdentification.Dtos;
@@ -11,7 +13,9 @@ using PetIdentification.Profiles;
 using PetIdentification.Tests.Helpers;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
 using Xunit;
@@ -93,6 +97,56 @@ namespace PetIdentification.Tests.UnitTests
             result.Should().BeOfType<UnsupportedMediaTypeResult>();
 
             (result as UnsupportedMediaTypeResult).StatusCode.Should().Be(415);
+        }
+
+        [Fact]
+        public async Task Does_HTTP_Return_BadRequest_When_File_Content_Is_Not_JPEG_Or_PNG()
+        {
+            
+            var formFields = new Dictionary<string, StringValues>()
+                {
+                    { "SignalRUserId", "10234"}
+                };
+            var formFiles = new Dictionary<string, string>()
+            {
+                {@"../../../TestFiles/SomeRandomTextFile.txt", "text/plain"}
+            };
+
+            var httpRequest = InstanceFactory
+                .CreateHttpRequest(string.Empty, string.Empty,
+                formFields, formFiles);
+
+            var result = await _funcController.HttpUrlDurableClient(
+                httpRequest,
+                _durableClient.Object,
+                InstanceFactory.CreateLogger());
+
+            result.Should().BeOfType<BadRequestObjectResult>();
+            (result as BadRequestObjectResult).Value
+                .Should().BeEquivalentTo("Only jpeg and png images are supported");
+        }
+
+        [Fact]
+        public async Task Does_HTTP_Return_BadRequest_When_SignalRUserId_IsNotProvided()
+        {
+            var formFiles = new Dictionary<string, string>()
+            {
+                {@"../../../TestFiles/StrayPuppy.jpg", "image/jpeg"}
+            };
+
+            var httpRequest = InstanceFactory
+                .CreateHttpRequest(string.Empty, string.Empty,
+                null, formFiles);
+
+            var result = await _funcController.HttpUrlDurableClient(
+                httpRequest,
+                _durableClient.Object,
+                InstanceFactory.CreateLogger());
+
+            result.Should().BeOfType<BadRequestObjectResult>();
+            (result as BadRequestObjectResult).Value
+                .Should().BeEquivalentTo("SignalRUserId field is mandatory");
+
         }
 
 

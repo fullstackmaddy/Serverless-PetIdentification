@@ -110,6 +110,59 @@ namespace PetIdentification.Tests.Helpers
             return request;
         }
 
+        /// <summary>
+        /// Returns an instance of the HttpRequest with form data in it.
+        /// </summary>
+        /// <param name="queryStringKey"></param>
+        /// <param name="queryStringValue"></param>
+        /// <param name="formFields">Key value pairs to be sent into headers</param>
+        /// <param name="formFiles">Key value pairs for the fully qualified path for the file
+        /// and the content type of the file.
+        /// </param>
+        /// <returns></returns>
+        public static HttpRequest CreateHttpRequest(string queryStringKey, string queryStringValue,
+            Dictionary<string, StringValues>? formFields, Dictionary<string, string> formFiles)
+        { 
+            var context = new DefaultHttpContext();
+            var request = context.Request;
+
+            var formFileCollection = new FormFileCollection();
+            int i = 0;
+            foreach (var file in formFiles.Keys)
+            {
+
+                
+                FileInfo fi = new FileInfo(file);
+                FileStream fs = new FileStream(fi.FullName,
+                    FileMode.Open, FileAccess.Read);
+
+                formFileCollection.Add(
+                    new FormFile(
+                            baseStream: fs,
+                            baseStreamOffset: 0,
+                            length: fs.Length,
+                            name: string.Format("File{0}", i.ToString()),
+                            fileName: fi.Name
+                        )
+                        {
+                            Headers = new HeaderDictionary(),
+                            ContentType = formFiles[file]
+                       
+                        }
+                    );
+                fs.Dispose();
+                i++;
+
+            }
+
+            var formCollection = new FormCollection(formFields, formFileCollection);
+            request.ContentType = "multipart/form-data; boundary=--------------------------689444905826361168275961";
+            request.Form = formCollection; ;
+            request.Query = new QueryCollection(CreateDictionary(queryStringKey, queryStringValue));
+            return request;
+        
+        }
+
         public static ILogger CreateLogger(LoggerTypes type = LoggerTypes.Null)
         {
             ILogger logger;

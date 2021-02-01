@@ -113,12 +113,25 @@ namespace PetIdentification.Functions
         )
         {
             logger.LogInformation("Started the execution of the HttpFormDataDurableClient");
-            if (string.IsNullOrWhiteSpace(request.ContentType) ||
-               (request.ContentType != "multipart/form-data"))
+            if (!request.HasFormContentType)
             {
                 return new UnsupportedMediaTypeResult();
             }
 
+            var file = request.Form.Files[0];
+            var signalRUserId = request.Form["SignalRUserId"];
+
+            List<string> allowedFileExtensions = new List<string>()
+            {
+                "image/jpeg",
+                "image/png"
+            };
+
+            if (!allowedFileExtensions.Contains(file.ContentType))
+                return new BadRequestObjectResult("Only jpeg and png images are supported"); ;
+
+            if (string.IsNullOrWhiteSpace(signalRUserId))
+                return new BadRequestObjectResult("SignalRUserId field is mandatory");
 
             var requestBody = string.Empty;
 
