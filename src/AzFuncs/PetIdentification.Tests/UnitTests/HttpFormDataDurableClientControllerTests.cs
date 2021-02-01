@@ -11,6 +11,7 @@ using PetIdentification.Profiles;
 using PetIdentification.Tests.Helpers;
 using System;
 using System.Collections.Generic;
+using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using Xunit;
@@ -76,6 +77,24 @@ namespace PetIdentification.Tests.UnitTests
 
             (result as UnsupportedMediaTypeResult).StatusCode.Should().Be(415);
         }
+
+        [Fact]
+        public async Task Does_Http_DurableClient_Return_Unsupported_MediaType_When_Content_Type_Is_Applicationjson()
+        {
+            var httpRequest = InstanceFactory.CreateHttpRequest(string.Empty
+                , string.Empty);
+
+            httpRequest.ContentType = "application/json";
+
+            var result = await _funcController.HttpUrlDurableClient(
+                httpRequest, _durableClient.Object, InstanceFactory.CreateLogger());
+
+            //Assertions
+            result.Should().BeOfType<UnsupportedMediaTypeResult>();
+
+            (result as UnsupportedMediaTypeResult).StatusCode.Should().Be(415);
+        }
+
 
     }
 }
