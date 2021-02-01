@@ -20,9 +20,8 @@ namespace PetIdentification.Tests.UnitTests
     {
         private readonly IMapper _mapper;
         private readonly Mock<IDurableOrchestrationContext> _orchestrationContext;
-        private EventGridDurableClientController _funcController;
-        private readonly Mock<IDurableClient> _durableClient;
-
+        private readonly EventGridDurableClientController _funcController;
+        
         public EventGridDurableClientControllerTests()
         {
             _mapper = InstanceFactory.CreateMapper();

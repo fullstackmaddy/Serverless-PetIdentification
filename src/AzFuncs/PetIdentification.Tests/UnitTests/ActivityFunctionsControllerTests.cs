@@ -17,7 +17,7 @@ namespace PetIdentification.Tests.UnitTests
 {
     public class ActivityFunctionsControllerTests
     {
-        private readonly IMapper _mapper;
+        
         private readonly Mock<IPredictionHelper> _predictionHelper;
         private readonly Mock<IAdoptionCentreDbHelper> _adoptionCentreDbHelper;
         private readonly Mock<IBreedInfoDbHelper> _breedInfoDbHelper;
@@ -25,9 +25,6 @@ namespace PetIdentification.Tests.UnitTests
 
         public ActivityFunctionsControllerTests()
         {
-
-
-            _mapper = InstanceFactory.CreateMapper();
 
             _predictionHelper = new Mock<IPredictionHelper>();
 
@@ -115,8 +112,6 @@ namespace PetIdentification.Tests.UnitTests
         [Fact]
         public async Task Does_GetBreedInformationAsync_Return_Breed_Information()
         {
-            var logger = InstanceFactory.CreateLogger(LoggerTypes.List);
-
             var result = await _funcController
                 .GetBreedInformationASync(string.Empty,
                 InstanceFactory.CreateLogger());

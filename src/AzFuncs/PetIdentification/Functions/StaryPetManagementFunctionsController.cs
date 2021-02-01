@@ -165,7 +165,7 @@ namespace PetIdentification.Functions
             StorageBlobCreatedEventData blobCreatedEventData = 
                 ((JObject)eventGridEvent.Data).ToObject<StorageBlobCreatedEventData>();
             
-            var result = await client
+            await client
             .StartNewAsync("StrayPetManagementOrchestration", instanceId: new Guid().ToString(), blobCreatedEventData.Url);
 
         }
@@ -195,7 +195,7 @@ namespace PetIdentification.Functions
             var durableReqDto = JsonConvert.DeserializeObject<DurableRequestDto>(requestBody);
 
 
-            var result = await durableClient
+            await durableClient
                 .StartNewAsync("StrayPetManagementOrchestration", instanceId: new Guid().ToString(), durableReqDto);
             
             return new AcceptedResult();

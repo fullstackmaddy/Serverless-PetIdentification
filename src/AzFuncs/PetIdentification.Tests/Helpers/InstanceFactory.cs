@@ -121,7 +121,7 @@ namespace PetIdentification.Tests.Helpers
         /// </param>
         /// <returns></returns>
         public static HttpRequest CreateHttpRequest(string queryStringKey, string queryStringValue,
-            Dictionary<string, StringValues>? formFields, Dictionary<string, string> formFiles)
+            Dictionary<string, StringValues> formFields, Dictionary<string, string> formFiles)
         { 
             var context = new DefaultHttpContext();
             var request = context.Request;

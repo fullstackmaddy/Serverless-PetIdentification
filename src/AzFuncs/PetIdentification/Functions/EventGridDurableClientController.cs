@@ -99,7 +99,7 @@ namespace PetIdentification.Functions
             StorageBlobCreatedEventData blobCreatedEventData =
                 ((JObject)eventGridEvent.Data).ToObject<StorageBlobCreatedEventData>();
 
-            var result = await client
+           await client
             .StartNewAsync("EventGridDurableOrchestration", instanceId: new Guid().ToString(), blobCreatedEventData.Url);
 
         }

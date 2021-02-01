@@ -143,7 +143,7 @@ namespace PetIdentification.Functions
             var durableReqDto = JsonConvert.DeserializeObject<DurableRequestDto>(requestBody);
 
 
-            var result = await durableClient
+            await durableClient
                 .StartNewAsync("HttpFormDataOrchestration", instanceId: new Guid().ToString(), durableReqDto);
 
             return new AcceptedResult();

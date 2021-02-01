@@ -26,7 +26,7 @@ namespace PetIdentification.Tests.UnitTests
     {
         private readonly IMapper _mapper;
         private readonly Mock<IDurableOrchestrationContext> _orchestrationContext;
-        private HttpFormDataDurableClientController _funcController;
+        private readonly HttpFormDataDurableClientController _funcController;
         private readonly Mock<IDurableClient> _durableClient;
 
         public HttpFormDataDurableClientControllerTests()
@@ -133,10 +133,11 @@ namespace PetIdentification.Tests.UnitTests
             {
                 {@"../../../TestFiles/StrayPuppy.jpg", "image/jpeg"}
             };
+            var formFields = new Dictionary<string, StringValues>();
 
             var httpRequest = InstanceFactory
                 .CreateHttpRequest(string.Empty, string.Empty,
-                null, formFiles);
+                formFields, formFiles);
 
             var result = await _funcController.HttpUrlDurableClient(
                 httpRequest,

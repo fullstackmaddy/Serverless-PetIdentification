@@ -21,7 +21,7 @@ namespace PetIdentification.Tests.UnitTests
     {
         private readonly IMapper _mapper;
         private readonly Mock<IDurableOrchestrationContext> _orchestrationContext;
-        private HttpUrlDurableClientController _funcController;
+        private readonly HttpUrlDurableClientController _funcController;
         private readonly Mock<IDurableClient> _durableClient;
 
         public HttpUrlDurableClientControllerTests()
