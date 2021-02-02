@@ -41,11 +41,6 @@ namespace PetIdentification.Functions
 
             var imageBlobUrl = context.GetInput<string>();
 
-            var predictions = await context.CallActivityAsync<List<PredictionResult>>
-            (ActivityFunctionsConstants.IdentifyStrayPetBreedWithUrlAsync,
-            imageBlobUrl);
-
-
             Task<List<PredictionResult>> getPredictionResults = context.CallActivityAsync<List<PredictionResult>>
                 (ActivityFunctionsConstants.IdentifyStrayPetBreedWithUrlAsync,
                 imageBlobUrl);
@@ -70,7 +65,7 @@ namespace PetIdentification.Functions
                 );
 
             Task<BreedInfo> getBreedInfo = context.CallActivityAsync<BreedInfo>(
-                    ActivityFunctionsConstants.GetBreedInformationASync,
+                    ActivityFunctionsConstants.GetBreedInformationAsync,
                     tagName
                 );
 
@@ -94,8 +89,6 @@ namespace PetIdentification.Functions
             };
 
             await context.CallActivityAsync(ActivityFunctionsConstants.PushMessagesToSignalRHub, signalRRequest);
-
-            logger.LogInformation("Finished execution of the orchestration: EventGridDurableOrchestration");
 
             return "Orchestrator EventGridDurableOrchestration executed the functions";
 

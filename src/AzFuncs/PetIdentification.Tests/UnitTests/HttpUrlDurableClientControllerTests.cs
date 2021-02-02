@@ -48,7 +48,7 @@ namespace PetIdentification.Tests.UnitTests
 
             _orchestrationContext.Setup(
                     x => x.CallActivityAsync<BreedInfo>(
-                        ActivityFunctionsConstants.GetBreedInformationASync,
+                        ActivityFunctionsConstants.GetBreedInformationAsync,
                         It.IsAny<string>())
                 ).ReturnsAsync(InstanceFactory.BreedInfo);
 

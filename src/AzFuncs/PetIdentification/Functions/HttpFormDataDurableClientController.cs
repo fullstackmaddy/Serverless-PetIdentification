@@ -71,7 +71,7 @@ namespace PetIdentification.Functions
                 );
 
             Task<BreedInfo> getBreedInfo = context.CallActivityAsync<BreedInfo>(
-                    ActivityFunctionsConstants.GetBreedInformationASync,
+                    ActivityFunctionsConstants.GetBreedInformationAsync,
                     tagName
                 );
 

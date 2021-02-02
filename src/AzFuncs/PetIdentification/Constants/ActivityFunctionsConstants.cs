@@ -8,7 +8,7 @@
 
         public const string LocateAdoptionCentresByBreedAsync = "LocateAdoptionCentresByBreedAsync";
 
-        public const string GetBreedInformationASync = "GetBreedInformationASync";
+        public const string GetBreedInformationAsync = "GetBreedInformationASync";
 
         public const string PushMessagesToSignalRHub = "PushMessagesToSignalRHub";
 

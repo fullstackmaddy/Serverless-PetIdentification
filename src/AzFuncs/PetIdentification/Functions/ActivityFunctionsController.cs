@@ -68,11 +68,30 @@ namespace PetIdentification.Functions
             [ActivityTrigger] string imageUrl,
             ILogger logger)
         {
-            logger.LogInformation($"Started the execution of IdentifyStrayPetBreedWithUrlAsync function");
+            
+            logger.LogInformation(
+                new EventId((int)LoggingConstants.EventId.IdentifyStrayPetBreedWithUrlAsyncStarted),
+                LoggingConstants.Template,
+                LoggingConstants.EventId.IdentifyStrayPetBreedWithUrlAsyncStarted.ToString(),
+                _correlationId,
+                LoggingConstants.ProcessingFunction.IdentifyStrayPetBreedWithUrlAsync.ToString(),
+                LoggingConstants.FunctionType.Activity.ToString(),
+                LoggingConstants.ProcessStatus.Started.ToString(),
+                "Execution finished."
+                );
 
             var result = await _predictionHelper.PredictBreedAsync(imageUrl);
 
-            logger.LogInformation($"Finshed calling the IdentifyStrayPetBreedWithUrlAsync function from prediction helper");
+            logger.LogInformation(
+                new EventId((int)LoggingConstants.EventId.IdentifyStrayPetBreedWithUrlAsyncFinished),
+                LoggingConstants.Template,
+                LoggingConstants.EventId.IdentifyStrayPetBreedWithUrlAsyncFinished.ToString(),
+                _correlationId,
+                LoggingConstants.ProcessingFunction.IdentifyStrayPetBreedWithUrlAsync.ToString(),
+                LoggingConstants.FunctionType.Activity.ToString(),
+                LoggingConstants.ProcessStatus.Finished.ToString(),
+                "Execution finished."
+                );
 
             return result.ToList(); ;
         }
@@ -82,11 +101,30 @@ namespace PetIdentification.Functions
         [ActivityTrigger] Stream s,
         ILogger logger)
         {
-            logger.LogInformation($"Started the execution of IdentifyStrayPetBreedWithStreamAsync function");
+            logger.LogInformation(
+                new EventId((int)LoggingConstants.EventId.IdentifyStrayPetBreedWithStreamAsyncStarted),
+                LoggingConstants.Template,
+                LoggingConstants.EventId.IdentifyStrayPetBreedWithStreamAsyncStarted.ToString(),
+                _correlationId,
+                LoggingConstants.ProcessingFunction.IdentifyStrayPetBreedWithStreamAsync.ToString(),
+                LoggingConstants.FunctionType.Activity.ToString(),
+                LoggingConstants.ProcessStatus.Started.ToString(),
+                "Execution Started."
+                );
+            
 
             var result = await _predictionHelper.PredictBreedAsync(s);
 
-            logger.LogInformation($"Finshed calling the IdentifyStrayPetBreedWithStreamAsync function from prediction helper");
+            logger.LogInformation(
+                new EventId((int)LoggingConstants.EventId.IdentifyStrayPetBreedWithStreamAsyncFinished),
+                LoggingConstants.Template,
+                LoggingConstants.EventId.IdentifyStrayPetBreedWithStreamAsyncFinished.ToString(),
+                _correlationId,
+                LoggingConstants.ProcessingFunction.IdentifyStrayPetBreedWithStreamAsync.ToString(),
+                LoggingConstants.FunctionType.Activity.ToString(),
+                LoggingConstants.ProcessStatus.Finished.ToString(),
+                "Execution Finished."
+                );
 
             return result.ToList(); ;
         }
@@ -98,23 +136,65 @@ namespace PetIdentification.Functions
             ILogger logger
         )
         {
-            logger.LogInformation("Started the execution of the LocateAdoptionCentresByBreedAsync activity function");
+            
+            logger.LogInformation(
+                new EventId((int)LoggingConstants.EventId.LocateAdoptionCentresByBreedAsyncStarted),
+                LoggingConstants.Template,
+                LoggingConstants.EventId.LocateAdoptionCentresByBreedAsyncStarted.ToString(),
+                _correlationId,
+                LoggingConstants.ProcessingFunction.LocateAdoptionCentresByBreedAsync.ToString(),
+                LoggingConstants.FunctionType.Activity.ToString(),
+                LoggingConstants.ProcessStatus.Started.ToString(),
+                "Execution Started."
+                );
+
             var result = await _adoptionCentreDbHelper.GetAdoptionCentresByBreedAsync(breed);
 
-            logger.LogInformation("Finished the execution of LocateAdoptionCentresByBreedAsync activity function");
+            logger.LogInformation(
+                new EventId((int)LoggingConstants.EventId.LocateAdoptionCentresByBreedAsyncFinsihed),
+                LoggingConstants.Template,
+                LoggingConstants.EventId.LocateAdoptionCentresByBreedAsyncFinsihed.ToString(),
+                _correlationId,
+                LoggingConstants.ProcessingFunction.LocateAdoptionCentresByBreedAsync.ToString(),
+                LoggingConstants.FunctionType.Activity.ToString(),
+                LoggingConstants.ProcessStatus.Finished.ToString(),
+                "Execution Finished."
+                );
 
             return result.ToList();
 
         }
 
-        [FunctionName(ActivityFunctionsConstants.GetBreedInformationASync)]
+        [FunctionName(ActivityFunctionsConstants.GetBreedInformationAsync)]
         public async Task<BreedInfo> GetBreedInformationASync(
             [ActivityTrigger] string breed,
             ILogger logger)
         {
-            logger.LogInformation("Started the execution of the GetBreedInformationASync activity function");
+            
+            logger.LogInformation(
+                new EventId((int)LoggingConstants.EventId.GetBreedInformationAsyncStarted),
+                LoggingConstants.Template,
+                LoggingConstants.EventId.GetBreedInformationAsyncStarted.ToString(),
+                _correlationId,
+                LoggingConstants.ProcessingFunction.GetBreedInformationAsync.ToString(),
+                LoggingConstants.FunctionType.Activity.ToString(),
+                LoggingConstants.ProcessStatus.Started.ToString(),
+                "Execution Started."
+                );
+
 
             var result = await _breedInfoDbHelper.GetBreedInformationAsync(breed);
+
+            logger.LogInformation(
+                new EventId((int)LoggingConstants.EventId.GetBreedInformationAsyncFinished),
+                LoggingConstants.Template,
+                LoggingConstants.EventId.GetBreedInformationAsyncFinished.ToString(),
+                _correlationId,
+                LoggingConstants.ProcessingFunction.GetBreedInformationAsync.ToString(),
+                LoggingConstants.FunctionType.Activity.ToString(),
+                LoggingConstants.ProcessStatus.Finished.ToString(),
+                "Execution Finished."
+                );
 
             return result;
         }
@@ -127,7 +207,16 @@ namespace PetIdentification.Functions
         )
         {
 
-            logger.LogInformation("Sending out signal R push notification");
+            logger.LogInformation(
+                new EventId((int)LoggingConstants.EventId.PushMessagesToSignalRHubStarted),
+                LoggingConstants.Template,
+                LoggingConstants.EventId.PushMessagesToSignalRHubStarted.ToString(),
+                _correlationId,
+                LoggingConstants.ProcessingFunction.PushMessagesToSignalRHub.ToString(),
+                LoggingConstants.FunctionType.Activity.ToString(),
+                LoggingConstants.ProcessStatus.Started.ToString(),
+                "Execution Started."
+                );
 
             await signalRMessages.AddAsync(
                 new SignalRMessage
@@ -138,6 +227,17 @@ namespace PetIdentification.Functions
                     Arguments = new[] { request.Message }
                 });
 
+            logger.LogInformation(
+               new EventId((int)LoggingConstants.EventId.PushMessagesToSignalRHubFinished),
+               LoggingConstants.Template,
+               LoggingConstants.EventId.PushMessagesToSignalRHubFinished.ToString(),
+               _correlationId,
+               LoggingConstants.ProcessingFunction.PushMessagesToSignalRHub.ToString(),
+               LoggingConstants.FunctionType.Activity.ToString(),
+               LoggingConstants.ProcessStatus.Finished.ToString(),
+               "Execution Finished."
+               );
+
             return true;
 
         }
@@ -147,7 +247,18 @@ namespace PetIdentification.Functions
             [ActivityTrigger] string blobUrl,
             ILogger logger)
         {
-            logger.LogInformation("Retreiving the blob metadata using blob url");
+
+            logger.LogInformation(
+               new EventId((int)LoggingConstants.EventId.GetSignalUserIdFromBlobMetadataAsyncStarted),
+               LoggingConstants.Template,
+               LoggingConstants.EventId.GetSignalUserIdFromBlobMetadataAsyncStarted.ToString(),
+               _correlationId,
+               LoggingConstants.ProcessingFunction.GetSignalUserIdFromBlobMetadataAsync.ToString(),
+               LoggingConstants.FunctionType.Activity.ToString(),
+               LoggingConstants.ProcessStatus.Started.ToString(),
+               "Execution Started."
+               );
+
 
             var blobMetadata = await _blobHelper.GetBlobMetaDataAsync(blobUrl);
 
@@ -155,6 +266,17 @@ namespace PetIdentification.Functions
                 blobMetadata.Where(x => x.Key == SignalRConstants.CustomHeaderName)
                 .FirstOrDefault()
                 .Value;
+
+            logger.LogInformation(
+               new EventId((int)LoggingConstants.EventId.GetSignalUserIdFromBlobMetadataAsyncFinshed),
+               LoggingConstants.Template,
+               LoggingConstants.EventId.GetSignalUserIdFromBlobMetadataAsyncFinshed.ToString(),
+               _correlationId,
+               LoggingConstants.ProcessingFunction.GetSignalUserIdFromBlobMetadataAsync.ToString(),
+               LoggingConstants.FunctionType.Activity.ToString(),
+               LoggingConstants.ProcessStatus.Finished.ToString(),
+               "Execution Finished."
+               );
 
             return signalRUserId;
 
