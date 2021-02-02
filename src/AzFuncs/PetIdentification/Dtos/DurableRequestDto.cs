@@ -10,5 +10,8 @@ namespace PetIdentification.Dtos
 
         [JsonProperty(PropertyName = "signalRUserId")]
         public string SignalRUserId { get; set; }
+
+        [JsonProperty(PropertyName = "correlationId")]
+        public string CorrelationId { get; set; }
     }
 }

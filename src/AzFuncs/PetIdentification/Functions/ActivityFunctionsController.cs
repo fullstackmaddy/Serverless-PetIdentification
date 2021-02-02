@@ -24,6 +24,19 @@ namespace PetIdentification.Functions
         private readonly IBreedInfoDbHelper _breedInfoDbHelper;
         private readonly IBlobHelper _blobHelper;
 
+        private string _correlationId;
+
+        public string CorrelationId 
+        {
+            get {
+                return _correlationId;
+            }
+            set
+            {
+                _correlationId = value;
+            }
+        }
+
         #endregion
 
         #region Constructors
