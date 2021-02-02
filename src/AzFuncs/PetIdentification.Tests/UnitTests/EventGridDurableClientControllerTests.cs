@@ -6,11 +6,9 @@ using PetIdentification.Constants;
 using PetIdentification.Dtos;
 using PetIdentification.Functions;
 using PetIdentification.Models;
-using PetIdentification.Profiles;
 using PetIdentification.Tests.Helpers;
 using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -21,7 +19,7 @@ namespace PetIdentification.Tests.UnitTests
         private readonly IMapper _mapper;
         private readonly Mock<IDurableOrchestrationContext> _orchestrationContext;
         private readonly EventGridDurableClientController _funcController;
-        
+
         public EventGridDurableClientControllerTests()
         {
             _mapper = InstanceFactory.CreateMapper();
@@ -83,7 +81,42 @@ namespace PetIdentification.Tests.UnitTests
             result.Should()
                   .BeOfType<string>();
             result.Should()
-                .Be("Orchestrator EventGridDurableOrchestration executed the functions");
+                .Be("Orchestrator sucessfully executed the functions.");
+        }
+
+        [Fact]
+        public async Task Does_Orchestration_Catch_Exception()
+        {
+            //Arrange
+            _orchestrationContext.Setup(
+                x => x.CallActivityAsync<List<PredictionResult>>
+                (ActivityFunctionsConstants.IdentifyStrayPetBreedWithUrlAsync, It.IsAny<string>()))
+                .ThrowsAsync(InstanceFactory.Exception);
+
+            //Act
+
+            var result = await _funcController
+            .RunOrchestrator(_orchestrationContext.Object,
+            InstanceFactory.CreateLogger());
+
+            //Assert
+            result.Should()
+                .BeEquivalentTo("Orchestrator failed in execution of the functions.");
+        }
+
+        [Fact]
+        public void Does_GetBlobName_Return_CorrectName()
+        {
+            //Arrange
+            var guid = Guid.NewGuid().ToString();
+            var imageUrl = string.Format("http://localhost/blobcontainer/{0}.jpg", guid);
+
+            //Act
+            var result = _funcController.GetBlobName(imageUrl);
+
+            //Assert
+            result.Should().BeEquivalentTo(guid);
+
         }
 
     }

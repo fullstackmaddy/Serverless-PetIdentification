@@ -11,6 +11,7 @@ using PetIdentification.Dtos;
 using PetIdentification.Models;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -23,6 +24,8 @@ namespace PetIdentification.Functions
         private readonly IMapper _mapper;
 
         private string _signalRUserId;
+
+        private string _correlationId;
         public EventGridDurableClientController(IMapper mapper)
         {
             _mapper = mapper ??
@@ -37,60 +40,100 @@ namespace PetIdentification.Functions
             ILogger logger
         )
         {
-            logger.LogInformation("Starting the execution of the orchestration: EventGridDurableOrchestration");
-
-            var imageBlobUrl = context.GetInput<string>();
-
-            Task<List<PredictionResult>> getPredictionResults = context.CallActivityAsync<List<PredictionResult>>
-                (ActivityFunctionsConstants.IdentifyStrayPetBreedWithUrlAsync,
-                imageBlobUrl);
-
-            Task<string> getSignalRUserId = context.CallActivityAsync<string>(
-                    ActivityFunctionsConstants.GetSignalUserIdFromBlobMetadataAsync,
-                    imageBlobUrl
-                );
-
-            await Task.WhenAll(new List<Task>() { getPredictionResults, getSignalRUserId });
-
-            var highestPrediction = getPredictionResults
-                .Result.OrderBy(x => x.Probability).FirstOrDefault();
-
-            string tagName = highestPrediction.TagName;
-
-            _signalRUserId = getSignalRUserId.Result;
-
-            Task<List<AdoptionCentre>> getAdoptionCentres = context.CallActivityAsync<List<AdoptionCentre>>(
-                    ActivityFunctionsConstants.LocateAdoptionCentresByBreedAsync,
-                    tagName
-                );
-
-            Task<BreedInfo> getBreedInfo = context.CallActivityAsync<BreedInfo>(
-                    ActivityFunctionsConstants.GetBreedInformationAsync,
-                    tagName
-                );
-
-            await Task.WhenAll(getAdoptionCentres, getBreedInfo);
-
-            var petIdentificationCanonical = new
-                PetIdentificationCanonical
+            try
             {
-                AdoptionCentres = getAdoptionCentres.Result,
-                BreedInformation = getBreedInfo.Result
-            };
+                logger.LogInformation(
+                new EventId((int)LoggingConstants.EventId.EventGridDurableOrchestrationStarted),
+                LoggingConstants.Template,
+                LoggingConstants.EventId.EventGridDurableOrchestrationStarted.ToString(),
+                _correlationId,
+                LoggingConstants.ProcessingFunction.EventGridDurableOrchestration.ToString(),
+                LoggingConstants.FunctionType.Orchestration.ToString(),
+                LoggingConstants.ProcessStatus.Started.ToString(),
+                "Execution started."
+                );
 
-            var petIdentificationCanonicalDto = _mapper
-                .Map<PetIdentificationCanonical, PetIdentificationCanonicalDto>
-                (petIdentificationCanonical);
+                var imageBlobUrl = context.GetInput<string>();
 
-            var signalRRequest = new SignalRRequest()
+                Task<List<PredictionResult>> getPredictionResults = context.CallActivityAsync<List<PredictionResult>>
+                    (ActivityFunctionsConstants.IdentifyStrayPetBreedWithUrlAsync,
+                    imageBlobUrl);
+
+                Task<string> getSignalRUserId = context.CallActivityAsync<string>(
+                        ActivityFunctionsConstants.GetSignalUserIdFromBlobMetadataAsync,
+                        imageBlobUrl
+                    );
+
+                await Task.WhenAll(new List<Task>() { getPredictionResults, getSignalRUserId });
+
+                var highestPrediction = getPredictionResults
+                    .Result.OrderBy(x => x.Probability).FirstOrDefault();
+
+                string tagName = highestPrediction.TagName;
+
+                _signalRUserId = getSignalRUserId.Result;
+
+                Task<List<AdoptionCentre>> getAdoptionCentres = context.CallActivityAsync<List<AdoptionCentre>>(
+                        ActivityFunctionsConstants.LocateAdoptionCentresByBreedAsync,
+                        tagName
+                    );
+
+                Task<BreedInfo> getBreedInfo = context.CallActivityAsync<BreedInfo>(
+                        ActivityFunctionsConstants.GetBreedInformationAsync,
+                        tagName
+                    );
+
+                await Task.WhenAll(getAdoptionCentres, getBreedInfo);
+
+                var petIdentificationCanonical = new
+                    PetIdentificationCanonical
+                {
+                    AdoptionCentres = getAdoptionCentres.Result,
+                    BreedInformation = getBreedInfo.Result
+                };
+
+                var petIdentificationCanonicalDto = _mapper
+                    .Map<PetIdentificationCanonical, PetIdentificationCanonicalDto>
+                    (petIdentificationCanonical);
+
+                var signalRRequest = new SignalRRequest()
+                {
+                    Message = JsonConvert.SerializeObject(petIdentificationCanonicalDto),
+                    UserId = _signalRUserId
+                };
+
+                await context.CallActivityAsync(ActivityFunctionsConstants.PushMessagesToSignalRHub, signalRRequest);
+
+                logger.LogInformation(
+                new EventId((int)LoggingConstants.EventId.EventGridDurableOrchestrationFinsihed),
+                LoggingConstants.Template,
+                LoggingConstants.EventId.EventGridDurableOrchestrationFinsihed.ToString(),
+                _correlationId,
+                LoggingConstants.ProcessingFunction.EventGridDurableOrchestration.ToString(),
+                LoggingConstants.FunctionType.Orchestration.ToString(),
+                LoggingConstants.ProcessStatus.Finished.ToString(),
+                "Execution finished."
+                );
+
+                return "Orchestrator sucessfully executed the functions.";
+
+            }
+            catch (Exception ex)
             {
-                Message = JsonConvert.SerializeObject(petIdentificationCanonicalDto),
-                UserId = _signalRUserId
-            };
+                logger.LogError(
+                new EventId((int)LoggingConstants.EventId.EventGridDurableOrchestrationFinsihed),
+                LoggingConstants.Template,
+                LoggingConstants.EventId.EventGridDurableOrchestrationFinsihed.ToString(),
+                _correlationId,
+                LoggingConstants.ProcessingFunction.EventGridDurableOrchestration.ToString(),
+                LoggingConstants.FunctionType.Orchestration.ToString(),
+                LoggingConstants.ProcessStatus.Failed.ToString(),
+                string.Format("Execution failed. Exception {0}.", ex.ToString())
+                );
 
-            await context.CallActivityAsync(ActivityFunctionsConstants.PushMessagesToSignalRHub, signalRRequest);
-
-            return "Orchestrator EventGridDurableOrchestration executed the functions";
+                return "Orchestrator failed in execution of the functions.";
+            }
+            
 
         }
 
@@ -104,13 +147,65 @@ namespace PetIdentification.Functions
             ILogger logger
         )
         {
-            logger.LogInformation("Started the execution of the event grid triggered durable orchestration module.");
-            StorageBlobCreatedEventData blobCreatedEventData =
+
+            try
+            {
+                StorageBlobCreatedEventData blobCreatedEventData =
                 ((JObject)eventGridEvent.Data).ToObject<StorageBlobCreatedEventData>();
 
-            await client
-             .StartNewAsync("EventGridDurableOrchestration", instanceId: new Guid().ToString(), blobCreatedEventData.Url);
+                _correlationId = GetBlobName(blobCreatedEventData.Url);
 
+                logger.LogInformation(
+                new EventId((int)LoggingConstants.EventId.EventGridDurableClientStarted),
+                LoggingConstants.Template,
+                LoggingConstants.EventId.EventGridDurableClientStarted.ToString(),
+                _correlationId,
+                LoggingConstants.ProcessingFunction.EventGridDurableClient.ToString(),
+                LoggingConstants.FunctionType.Client.ToString(),
+                LoggingConstants.ProcessStatus.Started.ToString(),
+                "Execution started."
+                );
+
+
+                await client
+                 .StartNewAsync("EventGridDurableOrchestration", instanceId: new Guid().ToString(), blobCreatedEventData.Url);
+
+                logger.LogInformation(
+                new EventId((int)LoggingConstants.EventId.EventGridDurableClientFinished),
+                LoggingConstants.Template,
+                LoggingConstants.EventId.EventGridDurableClientFinished.ToString(),
+                _correlationId,
+                LoggingConstants.ProcessingFunction.EventGridDurableClient.ToString(),
+                LoggingConstants.FunctionType.Client.ToString(),
+                LoggingConstants.ProcessStatus.Finished.ToString(),
+                "Execution started."
+                );
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(
+                new EventId((int)LoggingConstants.EventId.EventGridDurableClientFinished),
+                LoggingConstants.Template,
+                LoggingConstants.EventId.EventGridDurableClientFinished.ToString(),
+                _correlationId,
+                LoggingConstants.ProcessingFunction.EventGridDurableClient.ToString(),
+                LoggingConstants.FunctionType.Client.ToString(),
+                LoggingConstants.ProcessStatus.Failed.ToString(),
+                string.Format(
+                    "Execution Failed. Exception {0}.", ex.ToString())
+                );
+
+            }
+            
+
+        }
+
+
+        public string GetBlobName(string blobUrl)
+        {
+           
+            return Path.GetFileNameWithoutExtension(blobUrl);
+           
         }
         #endregion
     }

@@ -3,23 +3,17 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
-using Microsoft.Azure.WebJobs.Extensions.EventGrid;
-using Microsoft.Azure.EventGrid.Models;
 using Microsoft.Extensions.Logging;
-using PetIdentification.Interfaces;
 using PetIdentification.Models;
 using PetIdentification.Dtos;
 using PetIdentification.Constants;
 using System.Linq;
 using AutoMapper;
-using Newtonsoft.Json.Linq;
-using Microsoft.Azure.WebJobs.Extensions.SignalRService;
 using Newtonsoft.Json;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.IO;
-
 
 namespace PetIdentification.Functions
 {
@@ -28,6 +22,8 @@ namespace PetIdentification.Functions
         #region Properties&Fields
         
         private readonly IMapper _mapper;
+
+        private string _correlationId;
         
         #endregion
 
@@ -51,55 +47,91 @@ namespace PetIdentification.Functions
             ILogger logger
         )
         {
-            logger.LogInformation("Starting the execution of the orchestration:HttpUrlOrchestration.");
+            try
+            {
+                logger.LogInformation(
+                        new EventId((int)LoggingConstants.EventId.HttpUrlOrchestrationStarted),
+                        LoggingConstants.Template,
+                        LoggingConstants.EventId.HttpUrlOrchestrationStarted.ToString(),
+                        _correlationId,
+                        LoggingConstants.ProcessingFunction.HttpUrlOrchestration.ToString(),
+                        LoggingConstants.FunctionType.Orchestration.ToString(),
+                        LoggingConstants.ProcessStatus.Started.ToString(),
+                        "Execution started."
+                        );
 
-            var durableReqDto = context.GetInput<DurableRequestDto>();
+                var durableReqDto = context.GetInput<DurableRequestDto>();
 
-            //var imageUrl = context.GetInput<string>();
 
-            var predictions = await context.CallActivityAsync<List<PredictionResult>>
-            (ActivityFunctionsConstants.IdentifyStrayPetBreedWithUrlAsync,
-            durableReqDto.BlobUrl.ToString());
 
-            var highestPrediction = predictions.OrderBy(x => x.Probability).FirstOrDefault();
+                var predictions = await context.CallActivityAsync<List<PredictionResult>>
+                (ActivityFunctionsConstants.IdentifyStrayPetBreedWithUrlAsync,
+                durableReqDto.BlobUrl.ToString());
 
-            string tagName = highestPrediction.TagName;
+                var highestPrediction = predictions.OrderBy(x => x.Probability).FirstOrDefault();
 
-            Task<List<AdoptionCentre>> getAdoptionCentres = context.CallActivityAsync<List<AdoptionCentre>>(
-                    ActivityFunctionsConstants.LocateAdoptionCentresByBreedAsync,
-                    tagName
-                );
+                string tagName = highestPrediction.TagName;
 
-            Task<BreedInfo> getBreedInfo = context.CallActivityAsync<BreedInfo>(
-                    ActivityFunctionsConstants.GetBreedInformationAsync,
-                    tagName
-                );
+                Task<List<AdoptionCentre>> getAdoptionCentres = context.CallActivityAsync<List<AdoptionCentre>>(
+                        ActivityFunctionsConstants.LocateAdoptionCentresByBreedAsync,
+                        tagName
+                    );
 
-            await Task.WhenAll(getAdoptionCentres, getBreedInfo);
+                Task<BreedInfo> getBreedInfo = context.CallActivityAsync<BreedInfo>(
+                        ActivityFunctionsConstants.GetBreedInformationAsync,
+                        tagName
+                    );
 
-            var petIdentificationCanonical = new
-                PetIdentificationCanonical
+                await Task.WhenAll(getAdoptionCentres, getBreedInfo);
+
+                var petIdentificationCanonical = new
+                    PetIdentificationCanonical
                 {
                     AdoptionCentres = getAdoptionCentres.Result,
                     BreedInformation = getBreedInfo.Result
                 };
 
-            var petIdentificationCanonicalDto = _mapper
-                .Map<PetIdentificationCanonical, PetIdentificationCanonicalDto>
-                (petIdentificationCanonical);
+                var petIdentificationCanonicalDto = _mapper
+                    .Map<PetIdentificationCanonical, PetIdentificationCanonicalDto>
+                    (petIdentificationCanonical);
 
-            var signalRRequest = new SignalRRequest()
+                var signalRRequest = new SignalRRequest()
+                {
+                    Message = JsonConvert.SerializeObject(petIdentificationCanonicalDto),
+                    UserId = durableReqDto.SignalRUserId
+                };
+
+                await context.CallActivityAsync(ActivityFunctionsConstants.PushMessagesToSignalRHub,
+                    signalRRequest);
+
+                logger.LogInformation(
+                   new EventId((int)LoggingConstants.EventId.HttpUrlOrchestrationFinished),
+                   LoggingConstants.Template,
+                   LoggingConstants.EventId.HttpUrlOrchestrationFinished.ToString(),
+                   _correlationId,
+                   LoggingConstants.ProcessingFunction.HttpUrlOrchestration.ToString(),
+                   LoggingConstants.FunctionType.Orchestration.ToString(),
+                   LoggingConstants.ProcessStatus.Started.ToString(),
+                   "Execution Finished."
+                   );
+
+                return "Orchestrator sucessfully executed the functions.";
+            }
+            catch (Exception ex)
             {
-                Message = JsonConvert.SerializeObject(petIdentificationCanonicalDto),
-                UserId = durableReqDto.SignalRUserId
-            };
 
-            await context.CallActivityAsync(ActivityFunctionsConstants.PushMessagesToSignalRHub,
-                signalRRequest);
-
-            logger.LogInformation("Finished execution of the orchestration");
-
-            return "Orchestrator HttpUrlOrchestration executed the functions";
+                logger.LogError(
+                   new EventId((int)LoggingConstants.EventId.HttpUrlOrchestrationFinished),
+                   LoggingConstants.Template,
+                   LoggingConstants.EventId.HttpUrlOrchestrationFinished.ToString(),
+                   _correlationId,
+                   LoggingConstants.ProcessingFunction.HttpUrlOrchestration.ToString(),
+                   LoggingConstants.FunctionType.Orchestration.ToString(),
+                   LoggingConstants.ProcessStatus.Failed.ToString(),
+                   string.Format("Execution failed. Exception {0}.", ex.ToString())
+                   );
+                return "Orchestrator failed in execution of the functions.";
+            } 
 
         }
 
@@ -113,28 +145,82 @@ namespace PetIdentification.Functions
             ILogger logger
         )
         {
-            logger.LogInformation("Started the execution of the HttpUrlDurableClient");
+            
             if (string.IsNullOrWhiteSpace(request.ContentType) ||
                (request.ContentType != "application/json"))
             {
                 return new UnsupportedMediaTypeResult();
             }
 
-
+            DurableRequestDto durableReqDto;
             var requestBody = string.Empty;
-
             using (StreamReader reader = new StreamReader(request.Body))
             {
                 requestBody = await reader.ReadToEndAsync();
             }
 
-            var durableReqDto = JsonConvert.DeserializeObject<DurableRequestDto>(requestBody);
+            try
+            {
+                durableReqDto = JsonConvert.DeserializeObject<DurableRequestDto>(requestBody);
+            }
+            catch (Exception)
+            {
+
+                return new BadRequestObjectResult("Mandatory fields not provided.");
+            }
+
+           _correlationId = durableReqDto.CorrelationId;
+
+            try
+            {
+                
+                
+
+                logger.LogInformation(
+                    new EventId((int)LoggingConstants.EventId.HttpUrlDurableClientStarted),
+                    LoggingConstants.Template,
+                    LoggingConstants.EventId.HttpUrlDurableClientStarted.ToString(),
+                    _correlationId,
+                    LoggingConstants.ProcessingFunction.HttpUrlDurableClient.ToString(),
+                    LoggingConstants.FunctionType.Client.ToString(),
+                    LoggingConstants.ProcessStatus.Started.ToString(),
+                    "Execution started."
+                    );
 
 
-            await durableClient
-                .StartNewAsync("HttpUrlOrchestration", instanceId: new Guid().ToString(), durableReqDto);
+                await durableClient
+                    .StartNewAsync("HttpUrlOrchestration", 
+                    instanceId: new Guid().ToString(), durableReqDto)
+                    .ConfigureAwait(false);
 
-            return new AcceptedResult();
+                logger.LogInformation(
+                   new EventId((int)LoggingConstants.EventId.HttpUrlDurableClientFinished),
+                   LoggingConstants.Template,
+                   LoggingConstants.EventId.HttpUrlDurableClientFinished.ToString(),
+                   _correlationId,
+                   LoggingConstants.ProcessingFunction.HttpUrlDurableClient.ToString(),
+                   LoggingConstants.FunctionType.Client.ToString(),
+                   LoggingConstants.ProcessStatus.Finished.ToString(),
+                   "Execution Finished."
+                   );
+
+                return new AcceptedResult();
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(
+                   new EventId((int)LoggingConstants.EventId.HttpUrlDurableClientFinished),
+                   LoggingConstants.Template,
+                   LoggingConstants.EventId.HttpUrlDurableClientFinished.ToString(),
+                   _correlationId,
+                   LoggingConstants.ProcessingFunction.HttpUrlDurableClient.ToString(),
+                   LoggingConstants.FunctionType.Client.ToString(),
+                   LoggingConstants.ProcessStatus.Failed.ToString(),
+                   string.Format("Execution Failed. Exception {0}", ex.ToString())
+                   );
+
+                throw;
+            }
 
         }
 

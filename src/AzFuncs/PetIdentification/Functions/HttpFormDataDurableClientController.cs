@@ -1,22 +1,17 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Azure.EventGrid.Models;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
-using Microsoft.Azure.WebJobs.Extensions.EventGrid;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using PetIdentification.Constants;
 using PetIdentification.Dtos;
 using PetIdentification.Models;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace PetIdentification.Functions
@@ -27,6 +22,10 @@ namespace PetIdentification.Functions
         #region Properties&Fields
 
         private readonly IMapper _mapper;
+
+        private string _signalRUserId;
+
+        private string _correlationId;
 
         #endregion
 
@@ -50,55 +49,92 @@ namespace PetIdentification.Functions
             ILogger logger
         )
         {
-            logger.LogInformation("Starting the execution of the orchestration: HttpFormDataOrchestration");
-
-            var durableReqDto = context.GetInput<DurableRequestDto>();
-
-            //var imageUrl = context.GetInput<string>();
-
-            var predictions = await context.CallActivityAsync<List<PredictionResult>>
-            (
-                ActivityFunctionsConstants.IdentifyStrayPetBreedWithUrlAsync,
-                durableReqDto.BlobUrl.ToString());
-
-            var highestPrediction = predictions.OrderBy(x => x.Probability).FirstOrDefault();
-
-            string tagName = highestPrediction.TagName;
-
-            Task<List<AdoptionCentre>> getAdoptionCentres = context.CallActivityAsync<List<AdoptionCentre>>(
-                    ActivityFunctionsConstants.LocateAdoptionCentresByBreedAsync,
-                    tagName
-                );
-
-            Task<BreedInfo> getBreedInfo = context.CallActivityAsync<BreedInfo>(
-                    ActivityFunctionsConstants.GetBreedInformationAsync,
-                    tagName
-                );
-
-            await Task.WhenAll(getAdoptionCentres, getBreedInfo);
-
-            var petIdentificationCanonical = new
-                PetIdentificationCanonical
+            try
             {
-                AdoptionCentres = getAdoptionCentres.Result,
-                BreedInformation = getBreedInfo.Result
-            };
+                logger.LogInformation(
+                        new EventId((int)LoggingConstants.EventId.HttpFormDataOrchestrationStarted),
+                        LoggingConstants.Template,
+                        LoggingConstants.EventId.HttpFormDataOrchestrationStarted.ToString(),
+                        _correlationId,
+                        LoggingConstants.ProcessingFunction.HttpFormDataOrchestration.ToString(),
+                        LoggingConstants.FunctionType.Orchestration.ToString(),
+                        LoggingConstants.ProcessStatus.Started.ToString(),
+                        "Execution started."
+                        );
 
-            var petIdentificationCanonicalDto = _mapper
-                .Map<PetIdentificationCanonical, PetIdentificationCanonicalDto>
-                (petIdentificationCanonical);
+                var durableReqDto = context.GetInput<DurableRequestDto>();
 
-            var signalRRequest = new SignalRRequest()
+                //var imageUrl = context.GetInput<string>();
+
+                var predictions = await context.CallActivityAsync<List<PredictionResult>>
+                (
+                    ActivityFunctionsConstants.IdentifyStrayPetBreedWithUrlAsync,
+                    durableReqDto.BlobUrl.ToString());
+
+                var highestPrediction = predictions.OrderBy(x => x.Probability).FirstOrDefault();
+
+                string tagName = highestPrediction.TagName;
+
+                Task<List<AdoptionCentre>> getAdoptionCentres = context.CallActivityAsync<List<AdoptionCentre>>(
+                        ActivityFunctionsConstants.LocateAdoptionCentresByBreedAsync,
+                        tagName
+                    );
+
+                Task<BreedInfo> getBreedInfo = context.CallActivityAsync<BreedInfo>(
+                        ActivityFunctionsConstants.GetBreedInformationAsync,
+                        tagName
+                    );
+
+                await Task.WhenAll(getAdoptionCentres, getBreedInfo);
+
+                var petIdentificationCanonical = new
+                    PetIdentificationCanonical
+                {
+                    AdoptionCentres = getAdoptionCentres.Result,
+                    BreedInformation = getBreedInfo.Result
+                };
+
+                var petIdentificationCanonicalDto = _mapper
+                    .Map<PetIdentificationCanonical, PetIdentificationCanonicalDto>
+                    (petIdentificationCanonical);
+
+                var signalRRequest = new SignalRRequest()
+                {
+                    Message = JsonConvert.SerializeObject(petIdentificationCanonicalDto),
+                    UserId = durableReqDto.SignalRUserId
+                };
+
+                await context.CallActivityAsync("PushMessagesToSignalRHub", signalRRequest);
+
+                logger.LogInformation(
+                    new EventId((int)LoggingConstants.EventId.HttpFormDataOrchestrationFinished),
+                    LoggingConstants.Template,
+                    LoggingConstants.EventId.HttpFormDataOrchestrationFinished.ToString(),
+                    _correlationId,
+                    LoggingConstants.ProcessingFunction.HttpFormDataOrchestration.ToString(),
+                    LoggingConstants.FunctionType.Orchestration.ToString(),
+                    LoggingConstants.ProcessStatus.Finished.ToString(),
+                    "Execution Finished."
+                    );
+
+                return "Orchestrator sucessfully executed the functions.";
+            }
+            catch (Exception ex)
             {
-                Message = JsonConvert.SerializeObject(petIdentificationCanonicalDto),
-                UserId = durableReqDto.SignalRUserId
-            };
 
-            await context.CallActivityAsync("PushMessagesToSignalRHub", signalRRequest);
+                logger.LogError(
+                 new EventId((int)LoggingConstants.EventId.HttpFormDataOrchestrationFinished),
+                 LoggingConstants.Template,
+                 LoggingConstants.EventId.HttpFormDataOrchestrationFinished.ToString(),
+                 _correlationId,
+                 LoggingConstants.ProcessingFunction.HttpFormDataOrchestration.ToString(),
+                 LoggingConstants.FunctionType.Orchestration.ToString(),
+                 LoggingConstants.ProcessStatus.Failed.ToString(),
+                 string.Format("Execution failed. Exception {0}.", ex.ToString())
+                 );
 
-            logger.LogInformation("Finished execution of the orchestration: HttpFormDataOrchestration");
-
-            return "Orchestrator HttpFormDataOrchestration executed the functions.";
+                return "Orchestrator failed in execution of the functions.";
+            }
 
         }
 
@@ -112,14 +148,15 @@ namespace PetIdentification.Functions
             ILogger logger
         )
         {
-            logger.LogInformation("Started the execution of the HttpFormDataDurableClient");
+            
             if (!request.HasFormContentType)
             {
                 return new UnsupportedMediaTypeResult();
             }
 
             var file = request.Form.Files[0];
-            var signalRUserId = request.Form["SignalRUserId"];
+            _signalRUserId = request.Form["signalRUserId"];
+            _correlationId = request.Form["correlationId"];
 
             List<string> allowedFileExtensions = new List<string>()
             {
@@ -128,25 +165,61 @@ namespace PetIdentification.Functions
             };
 
             if (!allowedFileExtensions.Contains(file.ContentType))
-                return new BadRequestObjectResult("Only jpeg and png images are supported"); ;
+                return new BadRequestObjectResult("Only jpeg and png images are supported."); ;
 
-            if (string.IsNullOrWhiteSpace(signalRUserId))
-                return new BadRequestObjectResult("SignalRUserId field is mandatory");
+            if (string.IsNullOrWhiteSpace(_signalRUserId))
+                return new BadRequestObjectResult("SignalRUserId field is mandatory.");
 
-            var requestBody = string.Empty;
+            if(string.IsNullOrEmpty(_correlationId))
+                return new BadRequestObjectResult("CorrelationId field is mandatory.");
 
-            using (StreamReader reader = new StreamReader(request.Body))
+
+            try
             {
-                requestBody = await reader.ReadToEndAsync();
+                logger.LogInformation(
+                new EventId((int)LoggingConstants.EventId.HttpFormDataDurableClientStarted),
+                LoggingConstants.Template,
+                LoggingConstants.EventId.HttpFormDataDurableClientStarted.ToString(),
+                _correlationId,
+                LoggingConstants.ProcessingFunction.HttpFormDataDurableClient.ToString(),
+                LoggingConstants.FunctionType.Client.ToString(),
+                LoggingConstants.ProcessStatus.Started.ToString(),
+                "Execution started."
+                );
+
+                await durableClient
+                    .StartNewAsync("HttpFormDataOrchestration", instanceId: new Guid().ToString(), file);
+                
+                logger.LogInformation(
+                new EventId((int)LoggingConstants.EventId.HttpFormDataDurableClientFinished),
+                LoggingConstants.Template,
+                LoggingConstants.EventId.HttpFormDataDurableClientFinished.ToString(),
+                _correlationId,
+                LoggingConstants.ProcessingFunction.HttpFormDataDurableClient.ToString(),
+                LoggingConstants.FunctionType.Client.ToString(),
+                LoggingConstants.ProcessStatus.Finished.ToString(),
+                "Execution finished."
+                );
+                
+                return new AcceptedResult();
             }
+            catch (Exception ex)
+            {
+                logger.LogError(
+                new EventId((int)LoggingConstants.EventId.HttpFormDataDurableClientFinished),
+                LoggingConstants.Template,
+                LoggingConstants.EventId.HttpFormDataDurableClientFinished.ToString(),
+                _correlationId,
+                LoggingConstants.ProcessingFunction.HttpFormDataDurableClient.ToString(),
+                LoggingConstants.FunctionType.Client.ToString(),
+                LoggingConstants.ProcessStatus.Failed.ToString(),
+                string.Format(
+                    "Execution Failed. Exception {0}.", ex.ToString())
+                );
 
-            var durableReqDto = JsonConvert.DeserializeObject<DurableRequestDto>(requestBody);
-
-
-            await durableClient
-                .StartNewAsync("HttpFormDataOrchestration", instanceId: new Guid().ToString(), durableReqDto);
-
-            return new AcceptedResult();
+                throw ex;
+                
+            }
 
         }
 

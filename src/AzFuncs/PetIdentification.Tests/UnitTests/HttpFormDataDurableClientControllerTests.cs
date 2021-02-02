@@ -1,6 +1,5 @@
 ﻿using AutoMapper;
 using FluentAssertions;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using Microsoft.Extensions.Primitives;
@@ -9,14 +8,9 @@ using PetIdentification.Constants;
 using PetIdentification.Dtos;
 using PetIdentification.Functions;
 using PetIdentification.Models;
-using PetIdentification.Profiles;
 using PetIdentification.Tests.Helpers;
 using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Net.Http;
-using System.Net.Http.Headers;
-using System.Text;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -75,6 +69,40 @@ namespace PetIdentification.Tests.UnitTests
         }
 
         [Fact]
+        public async Task IsOrchestration_Completed_Successfully()
+        {
+            var result = await _funcController
+            .RunOrchestrator(_orchestrationContext.Object,
+            InstanceFactory.CreateLogger());
+
+            //Assertions
+            result.Should()
+                  .BeOfType<string>();
+            result.Should()
+                .Be("Orchestrator sucessfully executed the functions.");
+        }
+
+        [Fact]
+        public async Task Does_Orchestration_Catch_Exception()
+        {
+            //Arrange
+            _orchestrationContext.Setup(
+                x => x.CallActivityAsync<List<PredictionResult>>
+                (ActivityFunctionsConstants.IdentifyStrayPetBreedWithUrlAsync, It.IsAny<string>()))
+                .ThrowsAsync(InstanceFactory.Exception);
+
+            //Act
+
+            var result = await _funcController
+            .RunOrchestrator(_orchestrationContext.Object,
+            InstanceFactory.CreateLogger());
+
+            //Assert
+            result.Should()
+                .BeEquivalentTo("Orchestrator failed in execution of the functions.");
+        }
+
+        [Fact]
         public async Task Does_HTTP_DurableClient_Return_Unsupported_MediaType_When_Content_Is_not_Form_Data()
         {
 
@@ -106,12 +134,12 @@ namespace PetIdentification.Tests.UnitTests
         }
 
         [Fact]
-        public async Task Does_HTTP_Return_BadRequest_When_File_Content_Is_Not_JPEG_Or_PNG()
+        public async Task Does_HTTP_DurableClient_Return_BadRequest_When_File_Content_Is_Not_JPEG_Or_PNG()
         {
             
             var formFields = new Dictionary<string, StringValues>()
                 {
-                    { "SignalRUserId", "10234"}
+                    { "signalRUserId", "10234"}
                 };
             var formFiles = new Dictionary<string, string>()
             {
@@ -129,11 +157,11 @@ namespace PetIdentification.Tests.UnitTests
 
             result.Should().BeOfType<BadRequestObjectResult>();
             (result as BadRequestObjectResult).Value
-                .Should().BeEquivalentTo("Only jpeg and png images are supported");
+                .Should().BeEquivalentTo("Only jpeg and png images are supported.");
         }
 
         [Fact]
-        public async Task Does_HTTP_Return_BadRequest_When_SignalRUserId_IsNotProvided()
+        public async Task Does_HTTP_DurableClient_Return_BadRequest_When_SignalRUserId_IsNotProvided()
         {
             var formFiles = new Dictionary<string, string>()
             {
@@ -152,9 +180,39 @@ namespace PetIdentification.Tests.UnitTests
 
             result.Should().BeOfType<BadRequestObjectResult>();
             (result as BadRequestObjectResult).Value
-                .Should().BeEquivalentTo("SignalRUserId field is mandatory");
+                .Should().BeEquivalentTo("SignalRUserId field is mandatory.");
 
         }
+
+        [Fact]
+        public async Task Does_HTTP_DurableClient_Return_BadRequest_When_CorrelationId_IsNotProvided()
+        {
+            var formFields = new Dictionary<string, StringValues>()
+                {
+                    { "signalRUserId", "10234"}
+                };
+
+            var formFiles = new Dictionary<string, string>()
+            {
+                {@"../../../TestFiles/StrayPuppy.jpg", "image/jpeg"}
+            };
+            
+            var httpRequest = InstanceFactory
+                .CreateHttpRequest(string.Empty, string.Empty,
+                formFields, formFiles);
+
+            var result = await _funcController.HttpUrlDurableClient(
+                httpRequest,
+                _durableClient.Object,
+                InstanceFactory.CreateLogger());
+
+            result.Should().BeOfType<BadRequestObjectResult>();
+            (result as BadRequestObjectResult).Value
+                .Should().BeEquivalentTo("CorrelationId field is mandatory.");
+
+        }
+
+
 
 
     }

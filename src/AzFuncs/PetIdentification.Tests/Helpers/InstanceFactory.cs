@@ -10,6 +10,7 @@ using PetIdentification.Dtos;
 using PetIdentification.Models;
 using AutoMapper;
 using PetIdentification.Profiles;
+using System;
 
 namespace PetIdentification.Tests.Helpers
 {
@@ -50,6 +51,8 @@ namespace PetIdentification.Tests.Helpers
             Temprament = "Quiet, Loyal",
         };
 
+        
+
         public static IMapper CreateMapper()
         {
             var adoptionCentreProfile = new AdoptionCentreProfile();
@@ -67,6 +70,8 @@ namespace PetIdentification.Tests.Helpers
 
             return config.CreateMapper();
         }
+
+        public static Exception Exception = new Exception("Exception thrown for testing pruposes.");
 
         public static IConfigurationRoot BuildConfiguration(Dictionary<string, string> configurationItems)
         {

@@ -1,8 +1,6 @@
-﻿using System.Collections.Generic;
-using Xunit;
+﻿using Xunit;
 using FluentAssertions;
 using AutoMapper;
-using PetIdentification.Profiles;
 using PetIdentification.Models;
 using PetIdentification.Tests.Helpers;
 using PetIdentification.Dtos;

@@ -3,15 +3,14 @@ using FluentAssertions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using Moq;
+using Newtonsoft.Json;
 using PetIdentification.Constants;
 using PetIdentification.Dtos;
 using PetIdentification.Functions;
 using PetIdentification.Models;
-using PetIdentification.Profiles;
 using PetIdentification.Tests.Helpers;
 using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -82,7 +81,27 @@ namespace PetIdentification.Tests.UnitTests
             result.Should()
                   .BeOfType<string>();
             result.Should()
-                .Be("Orchestrator HttpUrlOrchestration executed the functions");
+                .Be("Orchestrator sucessfully executed the functions.");
+        }
+
+        [Fact]
+        public async Task Does_Orchestration_Catch_Exception()
+        {
+            //Arrange
+            _orchestrationContext.Setup(
+                x => x.CallActivityAsync<List<PredictionResult>>
+                (ActivityFunctionsConstants.IdentifyStrayPetBreedWithUrlAsync, It.IsAny<string>()))
+                .ThrowsAsync(InstanceFactory.Exception);
+
+            //Act
+
+            var result = await _funcController
+            .RunOrchestrator(_orchestrationContext.Object,
+            InstanceFactory.CreateLogger());
+
+            //Assert
+            result.Should()
+                .BeEquivalentTo("Orchestrator failed in execution of the functions.");
         }
 
         [Fact]
@@ -97,6 +116,28 @@ namespace PetIdentification.Tests.UnitTests
             result.Should().BeOfType<UnsupportedMediaTypeResult>();
 
             (result as UnsupportedMediaTypeResult).StatusCode.Should().Be(415);
+        }
+
+        [Fact]
+        public async Task Does_HTTP_DurableClient_Return_BadRequest_When_InCorrectDataIsSent()
+        {
+            //Arrange
+            var breedInfo = InstanceFactory.BreedInfo;
+            var httpRequest = InstanceFactory.CreateHttpRequest(
+                string.Empty, string.Empty,
+                JsonConvert.SerializeObject(breedInfo));
+            httpRequest.ContentType = "application/json";
+
+            //Act
+            var result = await _funcController.HttpUrlDurableClient(
+                httpRequest,
+                _durableClient.Object,
+                InstanceFactory.CreateLogger()
+                );
+
+            //Assert
+
+            result.Should().BeOfType<BadRequestObjectResult>();
         }
 
 
