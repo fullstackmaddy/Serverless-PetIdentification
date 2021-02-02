@@ -55,6 +55,12 @@ namespace PetIdentification.Tests.UnitTests
                 ).ReturnsAsync(true);
 
             _orchestrationContext.Setup(
+                    x => x.CallActivityAsync<BreedInfo>(
+                        ActivityFunctionsConstants.GetBreedInformationAsync,
+                        It.IsAny<string>())
+                ).ReturnsAsync(InstanceFactory.BreedInfo);
+
+            _orchestrationContext.Setup(
                 x => x.CallActivityAsync<string>(
                         ActivityFunctionsConstants.GetSignalUserIdFromBlobMetadataAsync,
                         It.IsAny<string>()

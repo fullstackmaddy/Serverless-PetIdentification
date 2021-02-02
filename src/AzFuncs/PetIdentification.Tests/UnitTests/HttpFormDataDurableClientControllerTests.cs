@@ -58,9 +58,15 @@ namespace PetIdentification.Tests.UnitTests
                 ).ReturnsAsync(InstanceFactory.AdoptionCentres);
 
             _orchestrationContext.Setup(
-                x => x.CallActivityAsync<bool>("PushMessagesToSignalRHub",
+                x => x.CallActivityAsync<bool>(ActivityFunctionsConstants.PushMessagesToSignalRHub,
                     It.IsAny<SignalRRequest>())
                 ).ReturnsAsync(true);
+
+            _orchestrationContext.Setup(
+                    x => x.CallActivityAsync<BreedInfo>(
+                        ActivityFunctionsConstants.GetBreedInformationAsync,
+                        It.IsAny<string>())
+                ).ReturnsAsync(InstanceFactory.BreedInfo);
 
             _funcController = new HttpFormDataDurableClientController(
                 _mapper);
