@@ -168,7 +168,8 @@ namespace PetIdentification.Functions
 
 
                 await client
-                 .StartNewAsync("EventGridDurableOrchestration", instanceId: new Guid().ToString(), blobCreatedEventData.Url);
+                 .StartNewAsync("EventGridDurableOrchestration", instanceId: new Guid().ToString(), blobCreatedEventData.Url)
+                 .ConfigureAwait(false);
 
                 logger.LogInformation(
                 new EventId((int)LoggingConstants.EventId.EventGridDurableClientFinished),

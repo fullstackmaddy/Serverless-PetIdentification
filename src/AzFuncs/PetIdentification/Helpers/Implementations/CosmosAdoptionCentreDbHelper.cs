@@ -44,7 +44,7 @@ namespace PetIdentification.Helpers
             
             while(query.HasMoreResults)
             {
-                foreach(AdoptionCentre a in await query.ExecuteNextAsync())
+                foreach(AdoptionCentre a in await query.ExecuteNextAsync().ConfigureAwait(false))
                 {
                     _adoptionCentres.Add(a);
                 }

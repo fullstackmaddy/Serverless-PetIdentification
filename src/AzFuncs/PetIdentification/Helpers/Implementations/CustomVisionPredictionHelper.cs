@@ -72,7 +72,8 @@ namespace PetIdentification.Helpers
             var result = await _predictionClient.ClassifyImageAsync(
                 projectId,
                 iterationName,
-                s);
+                s)
+                .ConfigureAwait(false);
 
             return _mapper.Map<List<PredictionModel>, List<PredictionResult>>
            (

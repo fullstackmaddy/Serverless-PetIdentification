@@ -66,7 +66,8 @@ namespace PetIdentification.Functions
 
                 var predictions = await context.CallActivityAsync<List<PredictionResult>>
                 (ActivityFunctionsConstants.IdentifyStrayPetBreedWithUrlAsync,
-                durableReqDto.BlobUrl.ToString());
+                durableReqDto.BlobUrl.ToString())
+                .ConfigureAwait(false);
 
                 var highestPrediction = predictions.OrderBy(x => x.Probability).FirstOrDefault();
 
@@ -102,7 +103,8 @@ namespace PetIdentification.Functions
                 };
 
                 await context.CallActivityAsync(ActivityFunctionsConstants.PushMessagesToSignalRHub,
-                    signalRRequest);
+                    signalRRequest)
+                    .ConfigureAwait(false);
 
                 logger.LogInformation(
                    new EventId((int)LoggingConstants.EventId.HttpUrlOrchestrationFinished),

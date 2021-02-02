@@ -77,7 +77,7 @@ namespace PetIdentification.Functions
                 "Execution finished."
                 );
 
-            var result = await _predictionHelper.PredictBreedAsync(imageUrl);
+            var result = await _predictionHelper.PredictBreedAsync(imageUrl).ConfigureAwait(false);
 
             logger.LogInformation(
                 new EventId((int)LoggingConstants.EventId.IdentifyStrayPetBreedWithUrlAsyncFinished),
@@ -110,7 +110,7 @@ namespace PetIdentification.Functions
                 );
             
 
-            var result = await _predictionHelper.PredictBreedAsync(s);
+            var result = await _predictionHelper.PredictBreedAsync(s).ConfigureAwait(false);
 
             logger.LogInformation(
                 new EventId((int)LoggingConstants.EventId.IdentifyStrayPetBreedWithStreamAsyncFinished),
@@ -145,7 +145,8 @@ namespace PetIdentification.Functions
                 "Execution Started."
                 );
 
-            var result = await _adoptionCentreDbHelper.GetAdoptionCentresByBreedAsync(breed);
+            var result = await _adoptionCentreDbHelper.GetAdoptionCentresByBreedAsync(breed)
+                .ConfigureAwait(false);
 
             logger.LogInformation(
                 new EventId((int)LoggingConstants.EventId.LocateAdoptionCentresByBreedAsyncFinsihed),
@@ -180,7 +181,8 @@ namespace PetIdentification.Functions
                 );
 
 
-            var result = await _breedInfoDbHelper.GetBreedInformationAsync(breed);
+            var result = await _breedInfoDbHelper.GetBreedInformationAsync(breed)
+                .ConfigureAwait(false);
 
             logger.LogInformation(
                 new EventId((int)LoggingConstants.EventId.GetBreedInformationAsyncFinished),
@@ -218,11 +220,12 @@ namespace PetIdentification.Functions
             await signalRMessages.AddAsync(
                 new SignalRMessage
                 {
-                    // the message will only be sent to this user ID
+
                     UserId = request.UserId,
                     Target = "sendPetAdoptionCentres",
                     Arguments = new[] { request.Message }
-                });
+                })
+                .ConfigureAwait(false);
 
             logger.LogInformation(
                new EventId((int)LoggingConstants.EventId.PushMessagesToSignalRHubFinished),
@@ -257,7 +260,8 @@ namespace PetIdentification.Functions
                );
 
 
-            var blobMetadata = await _blobHelper.GetBlobMetaDataAsync(blobUrl);
+            var blobMetadata = await _blobHelper.GetBlobMetaDataAsync(blobUrl)
+                .ConfigureAwait(false);
 
             var signalRUserId =
                 blobMetadata.Where(x => x.Key == SignalRConstants.CustomHeaderName)

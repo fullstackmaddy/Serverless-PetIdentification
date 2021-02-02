@@ -40,7 +40,8 @@ namespace PetIdentification.Helpers.Implementations
                  UriFactory.CreateDocumentUri(
                      CosmosDBConstants.DBName,
                      CosmosDBConstants.BreedInfoCollectionName,
-                     breed));
+                     breed))
+                 .ConfigureAwait(false);
 
             return new BreedInfo()
             {

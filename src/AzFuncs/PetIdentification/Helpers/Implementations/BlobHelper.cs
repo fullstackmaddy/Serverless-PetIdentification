@@ -31,7 +31,9 @@ namespace PetIdentification.Helpers
 
             var blobClient = _blobContainerClient.GetBlobClient(blobUriBuilder.BlobName);
 
-            BlobProperties blobProperties = await blobClient.GetPropertiesAsync();
+            BlobProperties blobProperties = await blobClient
+                .GetPropertiesAsync()
+                .ConfigureAwait(false);
 
             return blobProperties.Metadata;
 
