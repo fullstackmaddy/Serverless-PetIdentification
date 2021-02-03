@@ -1,14 +1,16 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html>
 
-<head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>PetIdentificationUI</title>
-    <base href="/" />
-    <link href="css/bootstrap/bootstrap.min.css" rel="stylesheet" />
-    <link href="css/app.css" rel="stylesheet" />
-</head>
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Pet Identification Blazor UI</title>
+        <link rel="preconnect" href="https://fonts.gstatic.com">
+        <link href="https://fonts.googleapis.com/css2?family=Lobster&family=Open+Sans+Condensed:wght@300;700&display=swap" 
+        rel="stylesheet">
+        <link rel="stylesheet" href="css/style.css" />
+        <base href="/"/>
+      </head>
 
 <body>
     <app>Loading...</app>
@@ -19,6 +21,29 @@
         <a class="dismiss">🗙</a>
     </div>
     <script src="_framework/blazor.webassembly.js"></script>
+    <script src="javascript/blazorInputFileUpload.js"></script>
+    <script>
+        window.togglemenuParent = () =>{
+            var menuList = document.getElementById("menuList");
+                menuList.style.maxHeight = "0px";
+                togglemenu();
+                function togglemenu() {
+                
+                if(menuList.style.maxHeight == "0px")
+                {
+                    menuList.style.maxHeight ="130px";
+
+                }
+                else
+                {
+                    menuList.style.maxHeight = "0px";
+                }
+                
+                }
+
+        }
+       
+    </script>
 </body>
 
 </html>

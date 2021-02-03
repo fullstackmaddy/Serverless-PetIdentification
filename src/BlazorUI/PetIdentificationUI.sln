@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PetIdentificationUI", "PetI
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PetIdentificationUI.Tests", "PetIdentificationUI.Tests\PetIdentificationUI.Tests.csproj", "{8D6EAF0A-5CEF-4833-B1B3-1D7685553025}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PetIdentificationUI.UITests", "PetIdentificationUI.UITests\PetIdentificationUI.UITests.csproj", "{262554A7-0241-4349-8A7A-DBD6F943E7CF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{8D6EAF0A-5CEF-4833-B1B3-1D7685553025}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8D6EAF0A-5CEF-4833-B1B3-1D7685553025}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8D6EAF0A-5CEF-4833-B1B3-1D7685553025}.Release|Any CPU.Build.0 = Release|Any CPU
+		{262554A7-0241-4349-8A7A-DBD6F943E7CF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{262554A7-0241-4349-8A7A-DBD6F943E7CF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{262554A7-0241-4349-8A7A-DBD6F943E7CF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{262554A7-0241-4349-8A7A-DBD6F943E7CF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
