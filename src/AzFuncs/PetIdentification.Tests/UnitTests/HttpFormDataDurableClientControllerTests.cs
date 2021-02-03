@@ -12,6 +12,7 @@ using PetIdentification.Models;
 using PetIdentification.Tests.Helpers;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -42,7 +43,7 @@ namespace PetIdentification.Tests.UnitTests
             );
             _orchestrationContext.Setup(
                 x => x.CallActivityAsync<List<PredictionResult>>
-                (ActivityFunctionsConstants.IdentifyStrayPetBreedWithUrlAsync, It.IsAny<string>())
+                (ActivityFunctionsConstants.IdentifyStrayPetBreedWithStreamAsync, It.IsAny<Stream>())
 
             ).ReturnsAsync(InstanceFactory.PredictedTags);
 
@@ -65,12 +66,9 @@ namespace PetIdentification.Tests.UnitTests
 
             _orchestrationContext.Setup(
                     x => x.GetInput<IFormFile>()
-                ).Returns(
-                    
-                )
-                ;
 
-
+                ).Returns(InstanceFactory.CreateUploadFile());
+            
             _funcController = new HttpFormDataDurableClientController(
                 _mapper);
 

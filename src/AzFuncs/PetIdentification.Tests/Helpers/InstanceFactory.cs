@@ -168,6 +168,30 @@ namespace PetIdentification.Tests.Helpers
         
         }
 
+
+        public static IFormFile CreateUploadFile()
+        {
+           
+            FileInfo fi = new FileInfo(@"../../../TestFiles/StrayPuppy.jpg");
+            FileStream fs = new FileStream(fi.FullName,
+                FileMode.Open, FileAccess.Read);
+
+            var file = new FormFile(
+                            baseStream: fs,
+                            baseStreamOffset: 0,
+                            length: fs.Length,
+                            name: "File",
+                            fileName: fi.Name
+                        )
+                        {
+                            Headers = new HeaderDictionary(),
+                            ContentType = "image/jpeg"
+
+                        };
+            
+            return file;
+        }
+
         public static ILogger CreateLogger(LoggerTypes type = LoggerTypes.Null)
         {
             ILogger logger;

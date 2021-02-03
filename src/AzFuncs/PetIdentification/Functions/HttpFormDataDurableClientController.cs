@@ -84,7 +84,7 @@ namespace PetIdentification.Functions
                 var highestPrediction = predictions.OrderBy(x => x.Probability).FirstOrDefault();
 
                 if (highestPrediction == null)
-                    throw new Exception("Unable tpo predict the tag");
+                    throw new Exception("Unable to predict the tag");
 
                 string tagName = highestPrediction.TagName;
 
