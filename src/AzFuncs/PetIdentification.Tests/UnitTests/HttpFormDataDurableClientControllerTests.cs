@@ -95,7 +95,7 @@ namespace PetIdentification.Tests.UnitTests
             //Arrange
             _orchestrationContext.Setup(
                 x => x.CallActivityAsync<List<PredictionResult>>
-                (ActivityFunctionsConstants.IdentifyStrayPetBreedWithUrlAsync, It.IsAny<string>()))
+                (ActivityFunctionsConstants.IdentifyStrayPetBreedWithStreamAsync, It.IsAny<Stream>()))
                 .ThrowsAsync(InstanceFactory.Exception);
 
             //Act
