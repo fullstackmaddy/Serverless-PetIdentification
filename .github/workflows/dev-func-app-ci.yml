@@ -3,9 +3,9 @@ name: dev-func-app-ci
 on: 
   push:
     branches:
-      - "dev*"
+      - dev
     tags:
-      - "azurefunc"
+      - refs/tags/azfunc
 jobs:
   build-az-function-solution:
 
@@ -15,9 +15,7 @@ jobs:
 
     env:
       SolutionPath: ./src/AzFuncs/PetIdentification.sln
-      FuncProjectPath: ./src/AzFuncs/PetIdentification
-      TestProjectPath: ./src/AzFuncs/PetIdentification.Tests
-
+     
     #define steps of the job
 
     steps:
@@ -30,7 +28,7 @@ jobs:
       - name:  Setup .NET
         uses: actions/setup-dotnet@v1
         with:
-          dotnet-version: 3.1.0
+          dotnet-version: 3.1.x
 
       # Build the code
       - name: Build the code
