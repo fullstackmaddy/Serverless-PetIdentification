@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using FluentAssertions;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using Microsoft.Extensions.Primitives;
@@ -61,6 +62,14 @@ namespace PetIdentification.Tests.UnitTests
                         ActivityFunctionsConstants.GetBreedInformationAsync,
                         It.IsAny<string>())
                 ).ReturnsAsync(InstanceFactory.BreedInfo);
+
+            _orchestrationContext.Setup(
+                    x => x.GetInput<IFormFile>()
+                ).Returns(
+                    
+                )
+                ;
+
 
             _funcController = new HttpFormDataDurableClientController(
                 _mapper);

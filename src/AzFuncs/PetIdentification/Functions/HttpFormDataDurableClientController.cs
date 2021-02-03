@@ -11,6 +11,7 @@ using PetIdentification.Dtos;
 using PetIdentification.Models;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -62,16 +63,28 @@ namespace PetIdentification.Functions
                         "Execution started."
                         );
 
-                var durableReqDto = context.GetInput<DurableRequestDto>();
 
                 //var imageUrl = context.GetInput<string>();
 
-                var predictions = await context.CallActivityAsync<List<PredictionResult>>
-                (
-                    ActivityFunctionsConstants.IdentifyStrayPetBreedWithUrlAsync,
-                    durableReqDto.BlobUrl.ToString());
+                var imageFile = context.GetInput<IFormFile>();
+
+                List<PredictionResult> predictions;
+
+                using (MemoryStream ms = new MemoryStream())
+                {
+                    await imageFile.CopyToAsync(ms);
+
+                    predictions = await context
+                        .CallActivityAsync<List<PredictionResult>>(
+                            ActivityFunctionsConstants.IdentifyStrayPetBreedWithStreamAsync,
+                            ms
+                        );
+                }
 
                 var highestPrediction = predictions.OrderBy(x => x.Probability).FirstOrDefault();
+
+                if (highestPrediction == null)
+                    throw new Exception("Unable tpo predict the tag");
 
                 string tagName = highestPrediction.TagName;
 
@@ -101,10 +114,12 @@ namespace PetIdentification.Functions
                 var signalRRequest = new SignalRRequest()
                 {
                     Message = JsonConvert.SerializeObject(petIdentificationCanonicalDto),
-                    UserId = durableReqDto.SignalRUserId
+                    UserId = _signalRUserId
                 };
 
-                await context.CallActivityAsync("PushMessagesToSignalRHub", signalRRequest);
+                await context.CallActivityAsync(
+                    ActivityFunctionsConstants.PushMessagesToSignalRHub,
+                    signalRRequest);
 
                 logger.LogInformation(
                     new EventId((int)LoggingConstants.EventId.HttpFormDataOrchestrationFinished),
@@ -148,7 +163,7 @@ namespace PetIdentification.Functions
             ILogger logger
         )
         {
-            
+
             if (!request.HasFormContentType)
             {
                 return new UnsupportedMediaTypeResult();
@@ -170,7 +185,7 @@ namespace PetIdentification.Functions
             if (string.IsNullOrWhiteSpace(_signalRUserId))
                 return new BadRequestObjectResult("SignalRUserId field is mandatory.");
 
-            if(string.IsNullOrEmpty(_correlationId))
+            if (string.IsNullOrEmpty(_correlationId))
                 return new BadRequestObjectResult("CorrelationId field is mandatory.");
 
 
@@ -189,7 +204,7 @@ namespace PetIdentification.Functions
 
                 await durableClient
                     .StartNewAsync("HttpFormDataOrchestration", instanceId: new Guid().ToString(), file);
-                
+
                 logger.LogInformation(
                 new EventId((int)LoggingConstants.EventId.HttpFormDataDurableClientFinished),
                 LoggingConstants.Template,
@@ -200,7 +215,7 @@ namespace PetIdentification.Functions
                 LoggingConstants.ProcessStatus.Finished.ToString(),
                 "Execution finished."
                 );
-                
+
                 return new AcceptedResult();
             }
             catch (Exception ex)
@@ -218,7 +233,7 @@ namespace PetIdentification.Functions
                 );
 
                 throw ex;
-                
+
             }
 
         }

@@ -8,7 +8,7 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PetIdentificationUI
+namespace BlazorPetIdentificationUI
 {
     public class Program
     {
