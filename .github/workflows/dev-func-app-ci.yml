@@ -4,8 +4,9 @@ on:
   push:
     branches:
       - dev
-    tags:
-      - refs/tags/azfunc
+    paths:
+      - ./src/AzFuncs/**
+    
 jobs:
   build-az-function-solution:
 
