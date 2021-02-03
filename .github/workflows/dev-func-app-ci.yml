@@ -5,7 +5,7 @@ on:
     branches:
       - dev
     paths:
-      - ./src/AzFuncs/**
+      - **/AzFuncs/**
     
 jobs:
   build-az-function-solution:
