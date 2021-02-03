@@ -2,7 +2,7 @@
 
 <Fixture Test="Does_MainLayoutComponent_Render_Correctly">
     <ComponentUnderTest>
-        <PetIdentificationUI.Shared.MainLayout />
+        <MainLayout />
     </ComponentUnderTest>
 
 @code
@@ -10,9 +10,9 @@
     void Does_MainLayoutComponent_Render_Correctly(Fixture fixture)
     {
         //Act
-        var context = fixture.GetComponentUnderTest<PetIdentificationUI.Shared.NavMenu>();
+        var context = fixture.GetComponentUnderTest<MainLayout>();
 
-        context.MarkupMatches(InstanceFactory.NavMenuExpectedHtml);
+        context.MarkupMatches(InstanceFactory.MainLayoutExpectedHtml);
     }
 }
 </Fixture>

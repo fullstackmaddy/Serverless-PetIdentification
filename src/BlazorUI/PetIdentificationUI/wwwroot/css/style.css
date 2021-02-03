@@ -237,6 +237,13 @@ button:hover {
     top: 0.5rem;
 }
 
+fileUploadDialogHeader {
+    font-family: 'Lobster', cursive; 
+    font-size: 30px;
+    opacity: 1.0;
+    
+}
+
 .fileUploadbox {
     border: 3px dotted #226d69;
     width: fit-content;

@@ -2,7 +2,7 @@
 
 <Fixture Test="Does_NavMenuComponent_Render_Correctly">
     <ComponentUnderTest>
-        <PetIdentificationUI.Shared.NavMenu />
+        <NavMenu />
     </ComponentUnderTest>
 
 @code
@@ -10,7 +10,7 @@
     void Does_NavMenuComponent_Render_Correctly(Fixture fixture)
     {
         //Act
-        var context = fixture.GetComponentUnderTest<PetIdentificationUI.Shared.NavMenu>();
+        var context = fixture.GetComponentUnderTest<NavMenu>();
 
         context.MarkupMatches(InstanceFactory.NavMenuExpectedHtml);
     }

@@ -31,5 +31,28 @@ namespace PetIdentificationUI.UITests.Helpers
                 </nav>
             </div>";
 
+        public static string MainLayoutExpectedHtml = @"<div class:ignore>
+          <div class:ignore>
+            <a href="""" class:ignore>
+              <img src=""images/logo.png"" class:ignore>
+            </a>
+            <nav>
+              <ul id =""menuList"" >
+                <li>
+                  <a href=""blobstorageuploadhttp"" class:ignore>Blobstorage Upload Http</a>
+                </li>
+                <li>
+                  <a href=""blobstorageuploadeventgrid"" class:ignore>Blobstorage Upload EventGrid</a>
+                </li>
+                <li>
+                  <a href = ""formupload"" class:ignore>Form Upload</a>
+                </li>
+              </ul>
+            </nav>
+          </div>
+        </div>
+        <div class:ignore>
+        </div>";
+
     }
 }
