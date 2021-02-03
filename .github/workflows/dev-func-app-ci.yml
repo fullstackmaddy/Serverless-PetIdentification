@@ -35,8 +35,20 @@ jobs:
       - name: Build the code
         run: dotnet build ${{env.SolutionPath}}
       
+      # Setup directory for uploading test results
+      - name: MakeDirectory For XUnit results
+        run: mkdir -p TestResults
+
       #Run the tests
       - name: Run Xunit Tests
-        run: dotnet test ${{env.SolutionPath}} --logger html
+        run: dotnet test ${{env.SolutionPath}} --logger html --results-directory TestResults
+
+      # Upload the test results as artifacts
+      - name: Upload Test results
+        uses: actions/upload-artifact@v2
+        with:
+          name : TestRunReports
+          path: TestResults
+
 
   
