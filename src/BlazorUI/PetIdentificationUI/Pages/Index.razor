@@ -1,3 +1,31 @@
 ﻿@page "/"
+@inject NavigationManager navigationManager
+
+<div class="row">
+    <div class="col-1">
+        <h2>#azuredevstories2021</h2>
+        <h4>Let us learn together</h4>
+        <p>This project is created for the azure dev stories 2021.<br />
+            In this project we will explore following concepts
+        </p>
+         <ul>
+            <li>How to create a custom classifier using custom vision. We will create a clasiifier to identify pets</li>
+            <li>How we can integrate the custom vision with a blazor application</li>
+            <li>How we can use Azure functions to act as the middleware between the UI and backend systems</li>
+            <li>How we can deploy the entire stack as a static web app using a blob storage</li>
+         </ul>
+         <br />
+         <h5>Click on button below to know more about Azure Dev Stories</h5>
+         <br />
+        <button type="button" @onclick="NavigateToKnowMore">Know More
+            
+            <img src="images/arrow.png">
+        </button>
+    </div>
+    <div class="col-2">
+        <img src="images/friends.png" class="friends" />
+        <div class="color-box"></div>
+    </div>
+</div>
 
 <PetIdentificationUI.Shared.Disclaimer/>
