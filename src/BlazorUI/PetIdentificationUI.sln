@@ -3,11 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.30907.101
 MinimumVisualStudioVersion = 15.0.26124.0
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PetIdentificationUI", "PetIdentificationUI\PetIdentificationUI.csproj", "{9EFFA683-9C12-4FAE-B516-18CCFE47F9C2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PetIdentificationUI", "PetIdentificationUI\PetIdentificationUI.csproj", "{9EFFA683-9C12-4FAE-B516-18CCFE47F9C2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PetIdentificationUI.Tests", "PetIdentificationUI.Tests\PetIdentificationUI.Tests.csproj", "{8D6EAF0A-5CEF-4833-B1B3-1D7685553025}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PetIdentificationUI.Tests", "PetIdentificationUI.Tests\PetIdentificationUI.Tests.csproj", "{8D6EAF0A-5CEF-4833-B1B3-1D7685553025}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PetIdentificationUI.UITests", "PetIdentificationUI.UITests\PetIdentificationUI.UITests.csproj", "{262554A7-0241-4349-8A7A-DBD6F943E7CF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PetIdentificationUI.UITests", "PetIdentificationUI.UITests\PetIdentificationUI.UITests.csproj", "{262554A7-0241-4349-8A7A-DBD6F943E7CF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

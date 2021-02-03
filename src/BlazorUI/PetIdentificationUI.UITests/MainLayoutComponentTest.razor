@@ -1,0 +1,18 @@
+﻿@inherits TestComponentBase
+
+<Fixture Test="Does_MainLayoutComponent_Render_Correctly">
+    <ComponentUnderTest>
+        <PetIdentificationUI.Shared.MainLayout />
+    </ComponentUnderTest>
+
+@code
+{
+    void Does_MainLayoutComponent_Render_Correctly(Fixture fixture)
+    {
+        //Act
+        var context = fixture.GetComponentUnderTest<PetIdentificationUI.Shared.NavMenu>();
+
+        context.MarkupMatches(InstanceFactory.NavMenuExpectedHtml);
+    }
+}
+</Fixture>

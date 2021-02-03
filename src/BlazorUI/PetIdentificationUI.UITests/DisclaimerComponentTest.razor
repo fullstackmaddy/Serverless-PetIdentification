@@ -1,2 +1,18 @@
 ﻿@inherits TestComponentBase
 
+<Fixture Test="Does_DisclaimerComponent_Render_Correctly">
+    <ComponentUnderTest>
+        <PetIdentificationUI.Shared.Disclaimer />
+    </ComponentUnderTest>
+
+@code
+{
+    void Does_DisclaimerComponent_Render_Correctly(Fixture fixture)
+    {
+        //Act
+        var context = fixture.GetComponentUnderTest<PetIdentificationUI.Shared.Disclaimer>();
+
+        context.MarkupMatches(InstanceFactory.DisclaimerExpectedHtml);
+    }
+}
+</Fixture>

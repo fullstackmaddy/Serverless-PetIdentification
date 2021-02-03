@@ -1,37 +1,18 @@
-﻿<div class="top-row pl-4 navbar navbar-dark">
-    <a class="navbar-brand" href="">PetIdentificationUI</a>
-    <button class="navbar-toggler" @onclick="ToggleNavMenu">
-        <span class="navbar-toggler-icon"></span>
-    </button>
+﻿<div class="navbar">
+    <NavLink href="">
+        <img src="images/logo.png" class="logo">
+    </NavLink>
+    <nav>
+        <ul id="menuList">
+            <li>
+                <NavLink href="blobstorageuploadhttp" class="menu-font">Blobstorage Upload Http</NavLink>
+            </li>
+            <li>
+                <NavLink href="blobstorageuploadeventgrid" class="menu-font">Blobstorage Upload EventGrid</NavLink>
+            </li>
+            <li>
+                <NavLink href="formupload" class="menu-font">Form Upload</NavLink>
+            </li>
+        </ul>
+    </nav>
 </div>
-
-<div class="@NavMenuCssClass" @onclick="ToggleNavMenu">
-    <ul class="nav flex-column">
-        <li class="nav-item px-3">
-            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                <span class="oi oi-home" aria-hidden="true"></span> Home
-            </NavLink>
-        </li>
-        <li class="nav-item px-3">
-            <NavLink class="nav-link" href="counter">
-                <span class="oi oi-plus" aria-hidden="true"></span> Counter
-            </NavLink>
-        </li>
-        <li class="nav-item px-3">
-            <NavLink class="nav-link" href="fetchdata">
-                <span class="oi oi-list-rich" aria-hidden="true"></span> Fetch data
-            </NavLink>
-        </li>
-    </ul>
-</div>
-
-@code {
-    private bool collapseNavMenu = true;
-
-    private string NavMenuCssClass => collapseNavMenu ? "collapse" : null;
-
-    private void ToggleNavMenu()
-    {
-        collapseNavMenu = !collapseNavMenu;
-    }
-}
