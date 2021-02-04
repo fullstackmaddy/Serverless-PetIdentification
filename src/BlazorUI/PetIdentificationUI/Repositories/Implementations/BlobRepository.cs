@@ -2,25 +2,47 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
+using Azure.Storage.Blobs;
+using Azure.Storage.Blobs.Models;
 using PetIdentificationUI.Repositories.Interfaces;
 
 namespace PetIdentificationUI.Repositories.Implementations
 {
     public class BlobRepository : IBlobRepository
     {
-        public BlobRepository()
+        private readonly BlobContainerClient _blobContainerClient;
+
+        public BlobRepository(BlobContainerClient blobContainerClient)
         {
+            _blobContainerClient = blobContainerClient ??
+                throw new ArgumentNullException(nameof(blobContainerClient));
 
         }
 
-        public Task SetBlobMetaDataAsync(IDictionary<string, string> headerValuePairs, string blobName)
+        public async Task UploadBlobAsync(Stream stream,
+            string contentType,
+            string blobName,
+            IDictionary<string, string> metaDataKeyValuePairs)
         {
-            throw new NotImplementedException();
-        }
+            //var get BlobClient
 
-        public Task UploadBlobAsync(Stream s, string blobName)
-        {
-            throw new NotImplementedException();
+            var blobClient = _blobContainerClient
+                .GetBlobClient(blobName);
+
+            var blobHttpHeaders = new BlobHttpHeaders();
+            blobHttpHeaders.ContentType = contentType;
+
+
+            //Upload the files to the blob
+            await blobClient
+                .UploadAsync(stream, blobHttpHeaders)
+                .ConfigureAwait(false);
+
+            await blobClient
+                .SetMetadataAsync(metaDataKeyValuePairs)
+                .ConfigureAwait(false);
+
+            
         }
     }
 }

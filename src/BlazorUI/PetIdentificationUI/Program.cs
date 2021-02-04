@@ -5,6 +5,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using PetIdentificationUI.Repositories.Implementations;
 using PetIdentificationUI.Repositories.Interfaces;
+using Azure.Storage.Blobs;
 
 namespace PetIdentificationUI
 {
@@ -17,7 +18,16 @@ namespace PetIdentificationUI
 
             builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
 
-            builder.Services.AddSingleton<IBlobRepository, BlobRepository>();
+            builder.Services.AddScoped<IBlobRepository, BlobRepository>();
+
+            builder.Services.AddSingleton<BlobContainerClient>(
+                    new BlobContainerClient(
+
+                        builder.Configuration
+                        .GetSection("servicesUrls")["storageConnectionString"]
+                        .ToString(),
+                        "uploads"
+                ));
 
             await builder.Build().RunAsync();
         }

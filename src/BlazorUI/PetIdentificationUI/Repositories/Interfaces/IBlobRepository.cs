@@ -8,9 +8,10 @@ namespace PetIdentificationUI.Repositories.Interfaces
 {
     public interface IBlobRepository
     {
-        public Task UploadBlobAsync(Stream s, string blobName);
-
-        public Task SetBlobMetaDataAsync(IDictionary<string, string> headerValuePairs, string blobName);
+        public Task UploadBlobAsync(Stream stream, 
+            string contentType,
+            string blobName,
+            IDictionary<string, string> metaDataKeyValuePairs);
 
     }
 }

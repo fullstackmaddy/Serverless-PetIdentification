@@ -21,8 +21,9 @@ namespace PetIdentificationUI.Components.Shared.Upload
         private string status = DefaultMessage;
         private string fileName;
         private string fileContentType;
+        private bool isFileProcessed;
 
-        private async Task UploadFileAsync(IFileListEntry[] files)
+        public async Task UploadFileAsync(IFileListEntry[] files)
         {
             var file = files.FirstOrDefault();
 
@@ -35,15 +36,75 @@ namespace PetIdentificationUI.Components.Shared.Upload
             {
                 status = "We only support upload of images lesser than 5 MB";
             }
+            else
+            {
+                fileName = file.Name;
+                status = $"Uploading {fileName}...";
+                fileContentType = file.Type;
+                
+
+                string blobName =
+                    await Task.Factory.StartNew(
+                            () => CreateBlobName()
+                        )
+                    .ConfigureAwait(false);
+                var headers =
+                    await Task.Factory.StartNew(
+                            () => CreateMetadataHeaderPairs()
+                        )
+                    .ConfigureAwait(false);
+
+                await BlobRepository
+                    .UploadBlobAsync(
+                        stream: file.Data,
+                        contentType: fileContentType,
+                        blobName: blobName,
+                        metaDataKeyValuePairs: headers
+                    )
+                    .ConfigureAwait(false);
+                
+                status = "Uploaded Successfully!!";
+                isFileProcessed = true;
+                StateHasChanged();
+            }
 
         }
 
-        private bool IsThereErrorInFileUplod()
+        public bool IsThereErrorInFileUplod()
         {
             if (fileName != null && (doesFileSizeExceedLimit || isUnacceptableFileType))
+            {
+                isFileProcessed = false;
                 return true;
+            }
             
             return false;
+        }
+
+        public string CreateBlobName()
+        {
+            string extension;
+
+            if (fileContentType == "image/jpeg")
+            {
+                extension = "jpg";
+            }
+            else
+            {
+                extension = "png";
+            }
+            return string.Format("{0}.{1}", Guid.NewGuid().ToString(), extension);
+
+        }
+
+
+
+        private Dictionary<string, string> CreateMetadataHeaderPairs()
+        {
+            return new Dictionary<string, string>()
+            {
+                { "signalRUserId", Guid.NewGuid().ToString("N")}
+            };
         }
 
 
