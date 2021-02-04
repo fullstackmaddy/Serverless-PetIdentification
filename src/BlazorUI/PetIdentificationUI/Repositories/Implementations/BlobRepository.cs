@@ -8,17 +8,17 @@ namespace PetIdentificationUI.Repositories.Implementations
 {
     public class BlobRepository : IBlobRepository
     {
-        public Task GetBlobNameAsync(string fileContentType)
+        public BlobRepository()
+        {
+
+        }
+
+        public Task SetBlobMetaDataAsync(IDictionary<string, string> headerValuePairs, string blobName)
         {
             throw new NotImplementedException();
         }
 
-        public Task SetBlobMetaDataAsync(IDictionary<string, string> headerValuePairs)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task UploadBlobAsync(Stream s)
+        public Task UploadBlobAsync(Stream s, string blobName)
         {
             throw new NotImplementedException();
         }
