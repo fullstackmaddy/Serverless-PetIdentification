@@ -1,1 +1,8 @@
-﻿<UploadDialog />
+﻿@if(!isFileProcessed)
+{
+    <UploadDialog OnFileStatusChange= "GetFileUploadStatus" />
+}
+else
+{
+    <p>File uploaded successfully</p>
+}

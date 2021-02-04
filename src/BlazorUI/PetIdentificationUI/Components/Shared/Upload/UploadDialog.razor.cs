@@ -13,6 +13,8 @@ namespace PetIdentificationUI.Components.Shared.Upload
     {
         [Inject] public IBlobRepository BlobRepository { get; set; }
 
+        [Parameter] public EventCallback<bool> OnFileStatusChange { get; set; }
+
         private const string DefaultMessage = @"Drop a image of the stray pet here, or click to choose a file";
 
         private const int MaxFileSize = 5 * 1024 * 1024;
@@ -27,15 +29,15 @@ namespace PetIdentificationUI.Components.Shared.Upload
         {
             var file = files.FirstOrDefault();
 
-            if (file == null)
+            
+
+            if (file == null || file.Size > MaxFileSize)
             {
-                status = "Please upload an image";
-                return;
+
+                isFileProcessed = false;
+                
             }
-            else if (file.Size > MaxFileSize)
-            {
-                status = "We only support upload of images lesser than 5 MB";
-            }
+           
             else
             {
                 fileName = file.Name;
@@ -65,8 +67,12 @@ namespace PetIdentificationUI.Components.Shared.Upload
                 
                 status = "Uploaded Successfully!!";
                 isFileProcessed = true;
-                StateHasChanged();
+               
             }
+
+            await OnFileStatusChange
+                .InvokeAsync(isFileProcessed)
+                .ConfigureAwait(false);
 
         }
 

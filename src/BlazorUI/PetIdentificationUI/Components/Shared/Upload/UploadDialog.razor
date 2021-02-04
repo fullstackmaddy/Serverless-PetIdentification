@@ -1,17 +1,7 @@
-﻿@if(!isFileProcessed)
-{
+﻿
     <h2 class="fileUploadDialogHeader">Let us find a nearest shelter</h2>
     <div class="fileUploadbox">
         <BlazorInputFile.InputFile accept="image/png,image/gif,image/jpeg" OnChange="UploadFileAsync" />
         @DefaultMessage
     </div>
-    @if (IsThereErrorInFileUplod())
-    {
-
-    <p class="fileupload-error">@status</p>
-    }
-}
-else
-{
-    @status
-}
+   
