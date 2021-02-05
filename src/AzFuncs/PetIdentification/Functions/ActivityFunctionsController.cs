@@ -206,6 +206,19 @@ namespace PetIdentification.Functions
         )
         {
 
+            #region DebugLog
+            logger.LogDebug(
+                new EventId((int)LoggingConstants.EventId.PushMessagesToSignalRHubStarted),
+                LoggingConstants.Template,
+                LoggingConstants.EventId.PushMessagesToSignalRHubStarted.ToString(),
+                _correlationId,
+                LoggingConstants.ProcessingFunction.PushMessagesToSignalRHub.ToString(),
+                LoggingConstants.FunctionType.Activity.ToString(),
+                LoggingConstants.ProcessStatus.Started.ToString(),
+                $"Pushed Message {request.Message}"
+                );
+            #endregion
+
             logger.LogInformation(
                 new EventId((int)LoggingConstants.EventId.PushMessagesToSignalRHubStarted),
                 LoggingConstants.Template,

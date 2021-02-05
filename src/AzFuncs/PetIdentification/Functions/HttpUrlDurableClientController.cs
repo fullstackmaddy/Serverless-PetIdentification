@@ -66,30 +66,31 @@ namespace PetIdentification.Functions
 
                 var predictions = await context.CallActivityAsync<List<PredictionResult>>
                 (ActivityFunctionsConstants.IdentifyStrayPetBreedWithUrlAsync,
-                durableReqDto.BlobUrl.ToString())
-                .ConfigureAwait(false);
+                durableReqDto.BlobUrl.ToString());
+                
 
                 var highestPrediction = predictions.OrderBy(x => x.Probability).FirstOrDefault();
 
                 string tagName = highestPrediction.TagName;
 
-                Task<List<AdoptionCentre>> getAdoptionCentres = context.CallActivityAsync<List<AdoptionCentre>>(
+                var adoptionCentres = await context.CallActivityAsync<List<AdoptionCentre>>(
                         ActivityFunctionsConstants.LocateAdoptionCentresByBreedAsync,
                         tagName
                     );
 
-                Task<BreedInfo> getBreedInfo = context.CallActivityAsync<BreedInfo>(
+
+
+                var breedInfo = await context.CallActivityAsync<BreedInfo>(
                         ActivityFunctionsConstants.GetBreedInformationAsync,
                         tagName
                     );
-
-                await Task.WhenAll(getAdoptionCentres, getBreedInfo);
+                  
 
                 var petIdentificationCanonical = new
                     PetIdentificationCanonical
                 {
-                    AdoptionCentres = getAdoptionCentres.Result,
-                    BreedInformation = getBreedInfo.Result
+                    AdoptionCentres = adoptionCentres,
+                    BreedInformation = breedInfo
                 };
 
                 var petIdentificationCanonicalDto = _mapper
@@ -103,8 +104,7 @@ namespace PetIdentification.Functions
                 };
 
                 await context.CallActivityAsync(ActivityFunctionsConstants.PushMessagesToSignalRHub,
-                    signalRRequest)
-                    .ConfigureAwait(false);
+                    signalRRequest);
 
                 logger.LogInformation(
                    new EventId((int)LoggingConstants.EventId.HttpUrlOrchestrationFinished),
@@ -113,7 +113,7 @@ namespace PetIdentification.Functions
                    _correlationId,
                    LoggingConstants.ProcessingFunction.HttpUrlOrchestration.ToString(),
                    LoggingConstants.FunctionType.Orchestration.ToString(),
-                   LoggingConstants.ProcessStatus.Started.ToString(),
+                   LoggingConstants.ProcessStatus.Finished.ToString(),
                    "Execution Finished."
                    );
 

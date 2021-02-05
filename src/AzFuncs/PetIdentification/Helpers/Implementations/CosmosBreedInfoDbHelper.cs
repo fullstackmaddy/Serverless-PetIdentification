@@ -29,39 +29,26 @@ namespace PetIdentification.Helpers
                  CosmosDBConstants.BreedInfoCollectionName
             );
 
-            IDocumentQuery<BreedInfo> query = _documentClient
-                .CreateDocumentQuery<BreedInfo>(
-                collectionUri)
-                .Where(x => x.Breed == breed)
-                .AsDocumentQuery();
-
-            var document = await _documentClient
-                 .ReadDocumentAsync(
-                 UriFactory.CreateDocumentUri(
-                     CosmosDBConstants.DBName,
-                     CosmosDBConstants.BreedInfoCollectionName,
-                     breed))
-                 .ConfigureAwait(false);
-
-            return new BreedInfo()
+            SqlQuerySpec sqlQuerySpec = new SqlQuerySpec()
             {
-                Breed = breed,
-
-                LifeExpectancy = (dynamic)document
-                .Resource.GetPropertyValue<string>("lifeExpectancy"),
-
-                Qualities = (dynamic) document
-                .Resource.GetPropertyValue<string>("qualities"),
-
-                Type = (dynamic)document
-                .Resource.GetPropertyValue<string>("type"),
-
-                Weight = (dynamic)document
-                .Resource.GetPropertyValue<string>("weight"),
-
-                Height = (dynamic)document
-                .Resource.GetPropertyValue<string>("height"),
+                QueryText = "Select * FROM BreedInformation b WHERE b.breed = @breed OFFSET 0 LIMIT 1",
+                Parameters = new SqlParameterCollection()
+                {
+                    new SqlParameter("@breed", breed)
+                }
             };
+            new FeedOptions { EnableCrossPartitionQuery = true };
+
+            var query = await Task.Factory.StartNew(
+                    () => _documentClient
+                .CreateDocumentQuery<BreedInfo>(
+                   collectionUri,
+                   sqlQuerySpec,
+                   new FeedOptions { EnableCrossPartitionQuery = true }
+                    )
+                ).ConfigureAwait(false);
+
+            return query.ToList()[0];
 
             
         }
