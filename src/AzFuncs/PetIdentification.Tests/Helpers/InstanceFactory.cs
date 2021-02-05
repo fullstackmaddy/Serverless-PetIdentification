@@ -47,8 +47,9 @@ namespace PetIdentification.Tests.Helpers
         {
             Breed = "pug",
             LifeExpectancy = "8 to 12 years",
-            Qualities = "Some quality",
-            Temprament = "Quiet, Loyal",
+            Qualities = "Some quality"
+            
+            
         };
 
         

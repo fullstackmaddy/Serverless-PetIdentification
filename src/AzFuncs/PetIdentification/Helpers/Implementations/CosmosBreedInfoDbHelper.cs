@@ -46,12 +46,21 @@ namespace PetIdentification.Helpers.Implementations
             return new BreedInfo()
             {
                 Breed = breed,
+
                 LifeExpectancy = (dynamic)document
                 .Resource.GetPropertyValue<string>("lifeExpectancy"),
-                Temprament = (dynamic)document
-                .Resource.GetPropertyValue<string>("temprament"),
+
                 Qualities = (dynamic) document
-                .Resource.GetPropertyValue<string>("qualities")
+                .Resource.GetPropertyValue<string>("qualities"),
+
+                Type = (dynamic)document
+                .Resource.GetPropertyValue<string>("type"),
+
+                Weight = (dynamic)document
+                .Resource.GetPropertyValue<string>("weight"),
+
+                Height = (dynamic)document
+                .Resource.GetPropertyValue<string>("height"),
             };
 
             
