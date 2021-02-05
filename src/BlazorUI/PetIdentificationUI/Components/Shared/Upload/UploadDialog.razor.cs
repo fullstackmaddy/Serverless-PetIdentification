@@ -20,7 +20,6 @@ namespace PetIdentificationUI.Components.Shared.Upload
         private const int MaxFileSize = 5 * 1024 * 1024;
         private bool doesFileSizeExceedLimit = false;
         private bool isUnacceptableFileType = false;
-        private string status = DefaultMessage;
         private string fileName;
         private string fileContentType;
         private bool isFileProcessed;
@@ -41,7 +40,6 @@ namespace PetIdentificationUI.Components.Shared.Upload
             else
             {
                 fileName = file.Name;
-                status = $"Uploading {fileName}...";
                 fileContentType = file.Type;
                 
 
@@ -65,7 +63,7 @@ namespace PetIdentificationUI.Components.Shared.Upload
                     )
                     .ConfigureAwait(false);
                 
-                status = "Uploaded Successfully!!";
+                
                 isFileProcessed = true;
                
             }

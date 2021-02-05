@@ -5,7 +5,7 @@ namespace PetIdentification.Constants
     {
         public const string HubName = "petupdate";
 
-        public const string CustomHeaderName = "x-blazor-app-user-id";
+        public const string CustomHeaderName = "SignalRUserId";
 
     }
     

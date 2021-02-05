@@ -9,6 +9,8 @@ namespace PetIdentificationUI.Components.Shared.Upload
     {
         bool isFileProcessed = false;
 
+        string userId = Guid.NewGuid().ToString();
+
         public void GetFileUploadStatus(bool value)
         {
             isFileProcessed = value;

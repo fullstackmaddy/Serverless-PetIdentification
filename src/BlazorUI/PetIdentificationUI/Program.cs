@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using PetIdentificationUI.Repositories.Implementations;
 using PetIdentificationUI.Repositories.Interfaces;
 using Azure.Storage.Blobs;
+using PetIdentificationUI.HttpClients;
 
 namespace PetIdentificationUI
 {
@@ -15,6 +16,10 @@ namespace PetIdentificationUI
         {
             var builder = WebAssemblyHostBuilder.CreateDefault(args);
             builder.RootComponents.Add<App>("app");
+            builder.Services.AddHttpClient<SignalRConnectionHttpClient>(
+                    client =>
+                    client.BaseAddress = new Uri("http://localhost:7071")
+                );
 
             builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
 

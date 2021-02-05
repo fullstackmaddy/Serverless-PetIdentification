@@ -29,7 +29,9 @@ namespace PetIdentificationUI.HttpClients
                     new StringContent(string.Empty)
                 );
 
-            var responseData = await result.Content.ReadAsStringAsync();
+            var responseData = await result
+                .Content.ReadAsStringAsync()
+                .ConfigureAwait(false);
 
             var connInfo = JsonConvert
                 .DeserializeObject<SignalRConnectionInfo>(responseData);
