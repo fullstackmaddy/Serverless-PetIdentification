@@ -192,7 +192,7 @@ namespace PetIdentification.Functions
 
                 await durableClient
                     .StartNewAsync("HttpUrlOrchestration", 
-                    instanceId: new Guid().ToString(), durableReqDto)
+                    instanceId: Guid.NewGuid().ToString(), durableReqDto)
                     .ConfigureAwait(false);
 
                 logger.LogInformation(

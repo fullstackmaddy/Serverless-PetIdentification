@@ -1,5 +1,6 @@
 using System;
 using AutoMapper;
+using Azure.Storage.Blobs;
 using Microsoft.Azure.CognitiveServices.Vision.CustomVision.Prediction;
 using Microsoft.Azure.Documents;
 using Microsoft.Azure.Documents.Client;
@@ -35,9 +36,16 @@ namespace PetIdentification
                     System.Environment.GetEnvironmentVariable("CustomVisionEndPoint")
                 }
             );
+            builder.Services.AddSingleton<BlobContainerClient>(
+                    new BlobContainerClient(
+                        System.Environment.GetEnvironmentVariable("StorageConnectionString"),
+                        "uploads"
+                ));
             builder.Services.AddTransient<IAdoptionCentreDbHelper, CosmosAdoptionCentreDbHelper>();
             builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
             builder.Services.AddTransient<IPredictionHelper, CustomVisionPredictionHelper>();
+            builder.Services.AddTransient<IBreedInfoDbHelper, CosmosBreedInfoDbHelper>();
+            builder.Services.AddTransient<IBlobHelper, BlobHelper>();
         }
     }
 }

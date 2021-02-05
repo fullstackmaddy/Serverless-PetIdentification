@@ -10,7 +10,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PetIdentification.Helpers.Implementations
+namespace PetIdentification.Helpers
 {
     public class CosmosBreedInfoDbHelper : IBreedInfoDbHelper
     {
