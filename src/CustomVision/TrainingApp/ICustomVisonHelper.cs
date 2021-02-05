@@ -11,8 +11,7 @@ namespace TrainingApp
 
         public Task TrainProject();
 
-        public Task PublishIteration();
+        public Task PublishIteration(string predictionResourceId);
 
-        public Task<IList<PredictionResult>> PredictImageTags(string imageFilePath);
     }
 }

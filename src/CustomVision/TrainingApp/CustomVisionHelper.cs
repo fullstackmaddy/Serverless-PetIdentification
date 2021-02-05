@@ -15,22 +15,22 @@ namespace TrainingApp
     {
         private readonly ICustomVisionTrainingClient _trainingClient;
         private readonly ICustomVisionPredictionClient _predictionClient;
-        private readonly string _predictionResourceId;
+       
         private Guid _projectId;
 
         private Guid _iterationId;
 
         private string _publishedIterationName;
 
+       
+
         public CustomVisionHelper( ICustomVisionTrainingClient trainingClient, 
-        ICustomVisionPredictionClient predictionClient,
-        string predictionResourceId
+        ICustomVisionPredictionClient predictionClient
+        
         )
         {
             _trainingClient = trainingClient;
             _predictionClient = predictionClient;
-            _predictionResourceId = predictionResourceId;
-            
             
         }
 
@@ -47,45 +47,16 @@ namespace TrainingApp
             
         }
 
-        public async Task<IList<PredictionResult>> PredictImageTags(string imageFilePath)
-        {
-            PredictionModels.ImagePrediction result;
+        
 
-            using(Stream s = new MemoryStream(await File.ReadAllBytesAsync(imageFilePath)))
-            {
-                result = await _predictionClient.ClassifyImageAsync(
-
-                    _projectId,
-                    _publishedIterationName,
-                    s
-                );
-
-            };
-
-            List<PredictionResult> predictedTags = new List<PredictionResult>();
-            foreach(var prediction in result.Predictions)
-            {
-                predictedTags.Add(
-                    new PredictionResult(){
-                        Tag = prediction.TagName,
-                        Probability = prediction.Probability
-                    }
-                );
-                
-            };
-
-            return predictedTags;
-            
-        }
-
-        public async Task PublishIteration()
+        public async Task PublishIteration(string predictionResourceId)
         {
             _publishedIterationName = string.Format("Iteration_{0}", _iterationId.ToString());
             await _trainingClient.PublishIterationAsync(
                 _projectId,
                 _iterationId,
                 _publishedIterationName,
-                _predictionResourceId
+                predictionResourceId
             );
             
         }
@@ -114,7 +85,7 @@ namespace TrainingApp
             var childDirectories = Directory.GetDirectories(parentDirectoryPath).ToList();
             foreach(var childDirectory in childDirectories)
             {
-                var directoryName = Path.GetDirectoryName(childDirectory);
+                var directoryName = Path.GetFileName(childDirectory);
                 
                 //Create Tag for the directory name
 
