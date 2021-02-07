@@ -22,7 +22,7 @@ namespace PetIdentificationUI.HttpClients
         public async Task<SignalRConnectionInfo> GetHubConnectionInformationAsync(string userId)
         {
             _httpClient.DefaultRequestHeaders.Clear();
-            _httpClient.DefaultRequestHeaders.Add("SignalRUserId", userId);
+            _httpClient.DefaultRequestHeaders.Add("signalruserid", userId);
 
             var result = await _httpClient.PostAsync(
                     "/api/negotiate",

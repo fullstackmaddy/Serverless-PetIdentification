@@ -55,41 +55,34 @@ namespace PetIdentification.Functions
 
                 var imageBlobUrl = context.GetInput<string>();
 
-                Task<List<PredictionResult>> getPredictionResults = context.CallActivityAsync<List<PredictionResult>>
+                var predictions = await context.CallActivityAsync<List<PredictionResult>>
                     (ActivityFunctionsConstants.IdentifyStrayPetBreedWithUrlAsync,
                     imageBlobUrl);
-
-                Task<string> getSignalRUserId = context.CallActivityAsync<string>(
+                
+                _signalRUserId = await context.CallActivityAsync<string>(
                         ActivityFunctionsConstants.GetSignalUserIdFromBlobMetadataAsync,
                         imageBlobUrl
                     );
 
-                await Task.WhenAll(new List<Task>() { getPredictionResults, getSignalRUserId });
-
-                var highestPrediction = getPredictionResults
-                    .Result.OrderBy(x => x.Probability).FirstOrDefault();
+                var highestPrediction = predictions.OrderBy(x => x.Probability).FirstOrDefault();
 
                 string tagName = highestPrediction.TagName;
 
-                _signalRUserId = getSignalRUserId.Result;
-
-                Task<List<AdoptionCentre>> getAdoptionCentres = context.CallActivityAsync<List<AdoptionCentre>>(
+                var adoptionCentres = await context.CallActivityAsync<List<AdoptionCentre>>(
                         ActivityFunctionsConstants.LocateAdoptionCentresByBreedAsync,
                         tagName
                     );
 
-                Task<BreedInfo> getBreedInfo = context.CallActivityAsync<BreedInfo>(
+                var breedInfo = await context.CallActivityAsync<BreedInfo>(
                         ActivityFunctionsConstants.GetBreedInformationAsync,
                         tagName
                     );
 
-                await Task.WhenAll(getAdoptionCentres, getBreedInfo);
-
                 var petIdentificationCanonical = new
                     PetIdentificationCanonical
                 {
-                    AdoptionCentres = getAdoptionCentres.Result,
-                    BreedInformation = getBreedInfo.Result
+                    AdoptionCentres = adoptionCentres,
+                    BreedInformation = breedInfo
                 };
 
                 var petIdentificationCanonicalDto = _mapper
@@ -168,7 +161,7 @@ namespace PetIdentification.Functions
 
 
                 await client
-                 .StartNewAsync("EventGridDurableOrchestration", instanceId: new Guid().ToString(), blobCreatedEventData.Url)
+                 .StartNewAsync("EventGridDurableOrchestration", instanceId: Guid.NewGuid().ToString(), blobCreatedEventData.Url)
                  .ConfigureAwait(false);
 
                 logger.LogInformation(

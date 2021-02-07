@@ -107,7 +107,7 @@ namespace PetIdentificationUI.Components.Shared.Upload
         {
             return new Dictionary<string, string>()
             {
-                { "SignalRUserId", Guid.NewGuid().ToString("N")}
+                { "signalruserid", Guid.NewGuid().ToString("N")}
             };
         }
 

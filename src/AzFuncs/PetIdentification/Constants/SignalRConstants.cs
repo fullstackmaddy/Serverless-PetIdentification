@@ -5,7 +5,7 @@ namespace PetIdentification.Constants
     {
         public const string HubName = "petupdate";
 
-        public const string CustomHeaderName = "SignalRUserId";
+        public const string CustomHeaderName = "signalruserid";
 
     }
     
