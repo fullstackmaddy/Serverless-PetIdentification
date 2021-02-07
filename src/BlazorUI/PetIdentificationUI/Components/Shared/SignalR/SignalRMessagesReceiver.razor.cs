@@ -1,16 +1,16 @@
 ﻿using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.SignalR.Client;
+using Newtonsoft.Json;
+using PetIdentificationUI.HttpClients;
+using PetIdentificationUI.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using PetIdentificationUI.HttpClients;
-using PetIdentificationUI.Models;
-using Newtonsoft.Json;
 
-namespace PetIdentificationUI.Components.Shared.Upload
+namespace PetIdentificationUI.Components.Shared.SignalR
 {
-    public partial class SignalR: ComponentBase
+    public partial class SignalRMessagesReceiver: ComponentBase
     {
         [Inject]
         SignalRConnectionHttpClient SignalRConnectionHttpClient
@@ -21,21 +21,21 @@ namespace PetIdentificationUI.Components.Shared.Upload
 
         private HubConnection _hubConnection;
 
-        private PetIdentificationCanonical _canonicalModel;
+        private PetIdentificationCanonical _petIdentificationCanonical;
 
         protected override async Task OnInitializedAsync()
         {
-            
+
             await CreateHubConnection()
                 .ConfigureAwait(false);
 
             _hubConnection.On<string>("sendPetAdoptionCentres", (message) =>
             {
-                _canonicalModel = JsonConvert
+                _petIdentificationCanonical = JsonConvert
                     .DeserializeObject<PetIdentificationCanonical>(message);
                 StateHasChanged();
             });
-               
+
 
         }
 
@@ -47,7 +47,7 @@ namespace PetIdentificationUI.Components.Shared.Upload
                              .GetHubConnectionInformationAsync(UserId)
                              .ConfigureAwait(false);
 
-            Console.WriteLine("accessToken {0}",connectionInfo.AccessToken);
+            Console.WriteLine("accessToken {0}", connectionInfo.AccessToken);
             Console.WriteLine("url {0}", connectionInfo.Url);
 
             //Build hb connection
@@ -68,8 +68,5 @@ namespace PetIdentificationUI.Components.Shared.Upload
             await _hubConnection.DisposeAsync()
                 .ConfigureAwait(false);
         }
-
-
-
     }
 }

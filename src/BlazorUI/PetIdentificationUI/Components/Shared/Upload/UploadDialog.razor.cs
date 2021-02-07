@@ -13,37 +13,26 @@ namespace PetIdentificationUI.Components.Shared.Upload
     {
         [Inject] public IBlobRepository BlobRepository { get; set; }
 
-        [Parameter] public EventCallback<bool> OnFileStatusChange { get; set; }
+        [Parameter] public EventCallback<string> OnFileStatusChange { get; set; }
 
         private const string DefaultMessage = @"Drop a image of the stray pet here, or click to choose a file";
 
         private const int MaxFileSize = 5 * 1024 * 1024;
-        private bool doesFileSizeExceedLimit = false;
-        private bool isUnacceptableFileType = false;
         private string fileName;
         private string fileContentType;
-        private bool isFileProcessed;
+        string blobName;
 
         public async Task UploadFileAsync(IFileListEntry[] files)
         {
             var file = files.FirstOrDefault();
 
-            
-
-            if (file == null || file.Size > MaxFileSize)
-            {
-
-                isFileProcessed = false;
-                
-            }
-           
-            else
+            if (file != null && file.Size < MaxFileSize)
             {
                 fileName = file.Name;
                 fileContentType = file.Type;
-                
 
-                string blobName =
+
+                blobName =
                     await Task.Factory.StartNew(
                             () => CreateBlobName()
                         )
@@ -62,27 +51,12 @@ namespace PetIdentificationUI.Components.Shared.Upload
                         metaDataKeyValuePairs: headers
                     )
                     .ConfigureAwait(false);
-                
-                
-                isFileProcessed = true;
-               
             }
 
             await OnFileStatusChange
-                .InvokeAsync(isFileProcessed)
+                .InvokeAsync(blobName)
                 .ConfigureAwait(false);
 
-        }
-
-        public bool IsThereErrorInFileUplod()
-        {
-            if (fileName != null && (doesFileSizeExceedLimit || isUnacceptableFileType))
-            {
-                isFileProcessed = false;
-                return true;
-            }
-            
-            return false;
         }
 
         public string CreateBlobName()
