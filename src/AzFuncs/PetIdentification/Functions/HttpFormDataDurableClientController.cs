@@ -88,23 +88,20 @@ namespace PetIdentification.Functions
 
                 string tagName = highestPrediction.TagName;
 
-                Task<List<AdoptionCentre>> getAdoptionCentres = context.CallActivityAsync<List<AdoptionCentre>>(
+                var adoptionCentres = await context.CallActivityAsync<List<AdoptionCentre>>(
                         ActivityFunctionsConstants.LocateAdoptionCentresByBreedAsync,
                         tagName
                     );
-
-                Task<BreedInfo> getBreedInfo = context.CallActivityAsync<BreedInfo>(
+                var breedInfo = await context.CallActivityAsync<BreedInfo>(
                         ActivityFunctionsConstants.GetBreedInformationAsync,
                         tagName
                     );
 
-                await Task.WhenAll(getAdoptionCentres, getBreedInfo);
-
                 var petIdentificationCanonical = new
                     PetIdentificationCanonical
                 {
-                    AdoptionCentres = getAdoptionCentres.Result,
-                    BreedInformation = getBreedInfo.Result
+                    AdoptionCentres = adoptionCentres,
+                    BreedInformation = breedInfo
                 };
 
                 var petIdentificationCanonicalDto = _mapper
