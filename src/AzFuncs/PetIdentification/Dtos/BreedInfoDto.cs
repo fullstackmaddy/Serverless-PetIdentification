@@ -21,5 +21,8 @@ namespace PetIdentification.Dtos
 
         [JsonProperty(PropertyName = "qualities")]
         public string Qualities { get; set; }
+
+        [JsonProperty(PropertyName = "stockImage")]
+        public string StockImage { get; set; }
     }
 }
