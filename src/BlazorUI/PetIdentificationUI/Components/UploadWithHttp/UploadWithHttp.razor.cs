@@ -25,8 +25,6 @@ namespace PetIdentificationUI.Components.UploadWithHttp
                 .ConfigureAwait(false);
         }
 
-        [Parameter] public string UserId { get; set; }
-
         private HubConnection _hubConnection;
 
         private PetIdentificationCanonical _petIdentificationCanonical;
@@ -44,6 +42,9 @@ namespace PetIdentificationUI.Components.UploadWithHttp
                 StateHasChanged();
             });
 
+            await _hubConnection.StartAsync();
+                
+
 
         }
 
@@ -52,11 +53,9 @@ namespace PetIdentificationUI.Components.UploadWithHttp
             //get connection info
             SignalRConnectionInfo connectionInfo = await
                              HttpAzureFunctionsClient
-                             .GetHubConnectionInformationAsync(UserId)
+                             .GetHubConnectionInformationAsync(userId)
                              .ConfigureAwait(false);
 
-            Console.WriteLine("accessToken {0}", connectionInfo.AccessToken);
-            Console.WriteLine("url {0}", connectionInfo.Url);
 
             //Build hb connection
             _hubConnection = new HubConnectionBuilder()
