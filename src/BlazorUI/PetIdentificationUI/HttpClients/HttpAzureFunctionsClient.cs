@@ -1,21 +1,33 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using PetIdentificationUI.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Net.Http.Json;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
-using PetIdentificationUI.Models;
 
 namespace PetIdentificationUI.HttpClients
 {
-    public class SignalRConnectionHttpClient
+    public class HttpAzureFunctionsClient
     {
-
         private readonly HttpClient _httpClient;
 
-        public SignalRConnectionHttpClient(HttpClient httpClient)
+        public HttpAzureFunctionsClient(HttpClient httpClient)
         {
-            this._httpClient = httpClient;
+            _httpClient = httpClient
+                ?? throw new ArgumentNullException(nameof(httpClient));
+        }
+
+        public async Task CallHttpUrlDurableClientFunctionAsync
+            (DurableRequest durableRequest)
+        {
+            
+            await _httpClient.PostAsJsonAsync<DurableRequest>(
+                    "/api/HttpUrlDurableClient",
+                    durableRequest
+                )
+                .ConfigureAwait(false);
 
         }
 
@@ -27,7 +39,8 @@ namespace PetIdentificationUI.HttpClients
             var result = await _httpClient.PostAsync(
                     "/api/negotiate",
                     new StringContent(string.Empty)
-                );
+                )
+                .ConfigureAwait(false);
 
             var responseData = await result
                 .Content.ReadAsStringAsync()
@@ -38,7 +51,7 @@ namespace PetIdentificationUI.HttpClients
 
             return connInfo;
 
-            
+
         }
     }
 }

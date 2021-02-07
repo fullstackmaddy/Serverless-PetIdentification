@@ -8,10 +8,11 @@ using BlazorInputFile;
 
 namespace PetIdentificationUI.Components.Shared.Upload
 {
-    
+
     public partial class UploadDialog : ComponentBase
     {
         [Inject] public IBlobRepository BlobRepository { get; set; }
+        [Parameter] public string ContainerName { get; set; }
 
         [Parameter] public EventCallback<string> OnFileStatusChange { get; set; }
 
@@ -20,7 +21,7 @@ namespace PetIdentificationUI.Components.Shared.Upload
         private const int MaxFileSize = 5 * 1024 * 1024;
         private string fileName;
         private string fileContentType;
-        string blobName;
+        string blobUrl;
 
         public async Task UploadFileAsync(IFileListEntry[] files)
         {
@@ -32,7 +33,7 @@ namespace PetIdentificationUI.Components.Shared.Upload
                 fileContentType = file.Type;
 
 
-                blobName =
+                var blobName =
                     await Task.Factory.StartNew(
                             () => CreateBlobName()
                         )
@@ -43,8 +44,9 @@ namespace PetIdentificationUI.Components.Shared.Upload
                         )
                     .ConfigureAwait(false);
 
-                await BlobRepository
+                blobUrl = await BlobRepository
                     .UploadBlobAsync(
+                        containerName: ContainerName,
                         stream: file.Data,
                         contentType: fileContentType,
                         blobName: blobName,
@@ -54,7 +56,7 @@ namespace PetIdentificationUI.Components.Shared.Upload
             }
 
             await OnFileStatusChange
-                .InvokeAsync(blobName)
+                .InvokeAsync(blobUrl)
                 .ConfigureAwait(false);
 
         }

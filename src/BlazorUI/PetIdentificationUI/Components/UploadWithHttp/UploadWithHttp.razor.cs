@@ -8,15 +8,23 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace PetIdentificationUI.Components.Shared.SignalR
+namespace PetIdentificationUI.Components.UploadWithHttp
 {
-    public partial class SignalRMessagesReceiver: ComponentBase
+    public partial class UploadWithHttp : ComponentBase
     {
-        [Inject]
-        HttpAzureFunctionsClient HttpAzureFunctionsClient
+        [Inject] public HttpAzureFunctionsClient HttpAzureFunctionsClient { get; set; }
+        string blobUrl;
+
+        string userId = Guid.NewGuid().ToString();
+
+        public async Task GetFileUploadStatus(string value)
         {
-            get; set;
+            blobUrl = value;
+
+            await InvokeAzureFunctionAsync()
+                .ConfigureAwait(false);
         }
+
         [Parameter] public string UserId { get; set; }
 
         private HubConnection _hubConnection;
@@ -68,5 +76,24 @@ namespace PetIdentificationUI.Components.Shared.SignalR
             await _hubConnection.DisposeAsync()
                 .ConfigureAwait(false);
         }
+
+        public async Task InvokeAzureFunctionAsync()
+        {
+            var durableRequest = new DurableRequest()
+            {
+                BlobUrl = new Uri(blobUrl),
+                CorrelationId = Guid.NewGuid().ToString(),
+                SignalRUserId = userId
+
+            };
+
+            await HttpAzureFunctionsClient
+                .CallHttpUrlDurableClientFunctionAsync(durableRequest)
+                .ConfigureAwait(false);
+
+
+        }
+
+
     }
 }

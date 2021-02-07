@@ -14,6 +14,7 @@ using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.IO;
+using System.Net.Mime;
 
 namespace PetIdentification.Functions
 {
@@ -148,11 +149,20 @@ namespace PetIdentification.Functions
         )
         {
             
-            if (string.IsNullOrWhiteSpace(request.ContentType) ||
-               (request.ContentType != "application/json"))
+            if (string.IsNullOrWhiteSpace(request.ContentType)
+               )
             {
                 return new UnsupportedMediaTypeResult();
             }
+
+            var contentType = new ContentType(request.ContentType);
+
+            if (contentType.MediaType != "application/json")
+            {
+                return new UnsupportedMediaTypeResult();
+            }
+
+
 
             DurableRequestDto durableReqDto;
             var requestBody = string.Empty;

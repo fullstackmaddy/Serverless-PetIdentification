@@ -10,23 +10,27 @@ namespace PetIdentificationUI.Repositories.Implementations
 {
     public class BlobRepository : IBlobRepository
     {
-        private readonly BlobContainerClient _blobContainerClient;
+        private readonly BlobServiceClient _blobServiceClient;
 
-        public BlobRepository(BlobContainerClient blobContainerClient)
+        public BlobRepository(BlobServiceClient blobServiceClient)
         {
-            _blobContainerClient = blobContainerClient ??
-                throw new ArgumentNullException(nameof(blobContainerClient));
+            _blobServiceClient = blobServiceClient ??
+                throw new ArgumentNullException(nameof(blobServiceClient));
 
         }
 
-        public async Task UploadBlobAsync(Stream stream,
+        public async Task<string> UploadBlobAsync(
+            string containerName,
+            Stream stream,
             string contentType,
             string blobName,
             IDictionary<string, string> metaDataKeyValuePairs)
         {
             //var get BlobClient
 
-            var blobClient = _blobContainerClient
+            var blobContainerClient = _blobServiceClient.GetBlobContainerClient(containerName);
+
+            var blobClient = blobContainerClient
                 .GetBlobClient(blobName);
 
             var blobHttpHeaders = new BlobHttpHeaders();
@@ -42,6 +46,7 @@ namespace PetIdentificationUI.Repositories.Implementations
                 .SetMetadataAsync(metaDataKeyValuePairs)
                 .ConfigureAwait(false);
 
+            return blobClient.Uri.ToString();
             
         }
     }

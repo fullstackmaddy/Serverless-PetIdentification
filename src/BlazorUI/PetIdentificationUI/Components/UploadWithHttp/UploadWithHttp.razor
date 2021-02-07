@@ -1,0 +1,27 @@
+﻿@using PetIdentificationUI.Components.Shared.Upload
+@using PetIdentificationUI.Components.Shared.SignalR
+@using System
+
+@if (String.IsNullOrWhiteSpace(blobUrl))
+{
+    <UploadDialog ContainerName ="uploadshttp" OnFileStatusChange="GetFileUploadStatus" />
+}
+else
+{
+
+    @if (_petIdentificationCanonical == null)
+        {
+        <p><em>We are working on it!</em></p>
+    }
+    else
+    {
+        <div class="row">
+            <div class="col-1">
+                <AdoptionCentresTable AdoptionCentres="_petIdentificationCanonical.AdoptionCentres" />
+            </div>
+            <div class="col-2">
+                <BreedInformationCard BreedInformation="_petIdentificationCanonical.BreedInformation" />
+            </div>
+        </div>
+     }
+}

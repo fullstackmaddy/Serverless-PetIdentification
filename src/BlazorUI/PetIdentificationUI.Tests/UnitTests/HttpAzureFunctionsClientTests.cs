@@ -14,13 +14,13 @@ using PetIdentificationUI.HttpClients;
 
 namespace PetIdentificationUI.Tests.UnitTests
 {
-    public class SignalRConnectionHttpClientTests
+    public class HttpAzureFunctionsClientTests
     {
         private readonly Mock<HttpMessageHandler> _mockHandler;
 
-        private readonly SignalRConnectionHttpClient _signalRConnectionHttpClient;
+        private readonly HttpAzureFunctionsClient _httpAzureFunctionsClient;
 
-        public SignalRConnectionHttpClientTests()
+        public HttpAzureFunctionsClientTests()
         {
             _mockHandler = new Mock<HttpMessageHandler>();
 
@@ -45,7 +45,7 @@ namespace PetIdentificationUI.Tests.UnitTests
                 BaseAddress = new Uri("http://localhost")
             };
 
-            _signalRConnectionHttpClient = new SignalRConnectionHttpClient(client);
+            _httpAzureFunctionsClient = new HttpAzureFunctionsClient(client);
 
         }
 
@@ -54,7 +54,7 @@ namespace PetIdentificationUI.Tests.UnitTests
         {
 
             //Act
-            var result = await _signalRConnectionHttpClient
+            var result = await _httpAzureFunctionsClient
                     .GetHubConnectionInformationAsync(userId: "123");
 
             //Assert
@@ -65,6 +65,5 @@ namespace PetIdentificationUI.Tests.UnitTests
 
 
         }
-
     }
 }

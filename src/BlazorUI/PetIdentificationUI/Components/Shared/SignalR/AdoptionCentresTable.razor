@@ -1,0 +1,19 @@
+﻿@using PetIdentificationUI.Models
+<h2>Following centres can foster this breed for adoption</h2>
+<table>
+    <tr>
+        <th>Name</th>
+        <th>Address</th>
+        <th>ZipCode</th>
+    </tr>
+
+    @foreach(AdoptionCentre centre in AdoptionCentres)
+    {
+        <tr>
+        <td>@centre.Name</td>
+        <td>@centre.Address</td>
+        <td>@centre.ZipCode</td>
+        </tr>
+    }
+    
+</table>
