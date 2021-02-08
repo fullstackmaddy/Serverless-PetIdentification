@@ -39,7 +39,7 @@ namespace PetIdentification
             builder.Services.AddSingleton<BlobContainerClient>(
                     new BlobContainerClient(
                         System.Environment.GetEnvironmentVariable("StorageConnectionString"),
-                        "uploads"
+                        "uploadseventgrid"
                 ));
             builder.Services.AddTransient<IAdoptionCentreDbHelper, CosmosAdoptionCentreDbHelper>();
             builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());

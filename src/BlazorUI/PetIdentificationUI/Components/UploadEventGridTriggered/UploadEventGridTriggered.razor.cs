@@ -10,8 +10,9 @@ namespace PetIdentificationUI.Components.UploadEventGridTriggered
 {
     public partial class UploadEventGridTriggered : ComponentBase
     {
-        [Inject] public HttpAzureFunctionsClient HttpAzureFunctionsClient { get; set; }
         string blobUrl;
+
+        [Inject] public HttpAzureFunctionsClient HttpAzureFunctionsClient {get; set;}
 
         string userId = Guid.NewGuid().ToString();
 
@@ -72,21 +73,6 @@ namespace PetIdentificationUI.Components.UploadEventGridTriggered
                 .ConfigureAwait(false);
         }
 
-        public async Task InvokeAzureFunctionAsync()
-        {
-            var durableRequest = new DurableRequest()
-            {
-                BlobUrl = new Uri(blobUrl),
-                CorrelationId = Guid.NewGuid().ToString(),
-                SignalRUserId = userId
 
-            };
-
-            await HttpAzureFunctionsClient
-                .CallHttpUrlDurableClientFunctionAsync(durableRequest)
-                .ConfigureAwait(false);
-
-
-        }
     }
 }

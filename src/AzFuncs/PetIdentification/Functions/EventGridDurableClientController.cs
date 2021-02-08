@@ -64,7 +64,7 @@ namespace PetIdentification.Functions
                         imageBlobUrl
                     );
 
-                var highestPrediction = predictions.OrderBy(x => x.Probability).FirstOrDefault();
+                var highestPrediction = predictions.OrderByDescending(x => x.Probability).FirstOrDefault();
 
                 string tagName = highestPrediction.TagName;
 
