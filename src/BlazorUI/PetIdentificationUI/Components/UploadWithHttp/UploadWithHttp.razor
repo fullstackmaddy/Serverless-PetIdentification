@@ -5,7 +5,7 @@
 <div class="centre">
 @if (String.IsNullOrWhiteSpace(blobUrl))
 {
-    <UploadDialog ContainerName ="uploadshttp" OnFileStatusChange="GetFileUploadStatus" />
+    <UploadDialog ContainerName ="uploadshttp" UserId="userId"  OnFileStatusChange="GetFileUploadStatus" />
 }
 else
 {

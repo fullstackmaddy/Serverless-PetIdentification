@@ -14,6 +14,8 @@ namespace PetIdentificationUI.Components.Shared.Upload
         [Inject] public IBlobRepository BlobRepository { get; set; }
         [Parameter] public string ContainerName { get; set; }
 
+        [Parameter] public string UserId { get; set; }
+
         [Parameter] public EventCallback<string> OnFileStatusChange { get; set; }
 
         private const string DefaultMessage = @"Drop a image of the stray pet here, or click to choose a file";
@@ -83,7 +85,7 @@ namespace PetIdentificationUI.Components.Shared.Upload
         {
             return new Dictionary<string, string>()
             {
-                { "signalruserid", Guid.NewGuid().ToString("N")}
+                { "signalruserid", UserId.ToString()}
             };
         }
 

@@ -14,7 +14,7 @@ namespace PetIdentificationUI.Components.UploadEventGridTriggered
 
         [Inject] public HttpAzureFunctionsClient HttpAzureFunctionsClient {get; set;}
 
-        string userId = Guid.NewGuid().ToString();
+        string userId;
 
         public void GetFileUploadStatus(string value)
         {
@@ -28,12 +28,14 @@ namespace PetIdentificationUI.Components.UploadEventGridTriggered
 
         protected override async Task OnInitializedAsync()
         {
+             userId = Guid.NewGuid().ToString();
 
             await CreateHubConnection()
                 .ConfigureAwait(false);
 
             _hubConnection.On<string>("sendPetAdoptionCentres", (message) =>
             {
+                Console.WriteLine($"Message received {message}");
                 _petIdentificationCanonical = JsonConvert
                     .DeserializeObject<PetIdentificationCanonical>(message);
                 StateHasChanged();
@@ -52,7 +54,8 @@ namespace PetIdentificationUI.Components.UploadEventGridTriggered
                              HttpAzureFunctionsClient
                              .GetHubConnectionInformationAsync(userId)
                              .ConfigureAwait(false);
-
+            Console.WriteLine($"Connection Info {userId}");
+            Console.WriteLine($"url {connectionInfo.Url}");
 
             //Build hb connection
             _hubConnection = new HubConnectionBuilder()
