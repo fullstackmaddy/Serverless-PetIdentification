@@ -70,7 +70,7 @@ namespace PetIdentification.Functions
                 durableReqDto.BlobUrl.ToString());
                 
 
-                var highestPrediction = predictions.OrderBy(x => x.Probability).FirstOrDefault();
+                var highestPrediction = predictions.OrderByDescending(x => x.Probability).FirstOrDefault();
 
                 string tagName = highestPrediction.TagName;
 

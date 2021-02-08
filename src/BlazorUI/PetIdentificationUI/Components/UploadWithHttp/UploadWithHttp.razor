@@ -2,6 +2,7 @@
 @using PetIdentificationUI.Components.Shared.SignalR
 @using System
 
+<div class="centre">
 @if (String.IsNullOrWhiteSpace(blobUrl))
 {
     <UploadDialog ContainerName ="uploadshttp" OnFileStatusChange="GetFileUploadStatus" />
@@ -15,13 +16,16 @@ else
     }
     else
     {
-        <div class="row">
-            <div class="col-1">
+        
+            <div class="card">
+                <BreedInformationCard BreedInformation="_petIdentificationCanonical.BreedInformation" />
                 <AdoptionCentresTable AdoptionCentres="_petIdentificationCanonical.AdoptionCentres" />
             </div>
-            <div class="col-2">
-                <BreedInformationCard BreedInformation="_petIdentificationCanonical.BreedInformation" />
-            </div>
-        </div>
+            
      }
 }
+</div>
+
+<br />
+<br />
+<PetIdentificationUI.Components.Shared.Disclaimer />
