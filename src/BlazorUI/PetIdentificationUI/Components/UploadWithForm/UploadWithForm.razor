@@ -1,0 +1,17 @@
+﻿@using PetIdentificationUI.Components.Shared.SignalR
+@if(_petIdentificationCanonical == null)
+{  
+    <h2 class="fileUploadDialogHeader">Let us try identifying the pet</h2>
+    <div class="fileUploadbox">
+        <BlazorInputFile.InputFile accept="image/png,image/gif,image/jpeg" OnChange="UploadImageAsync" />
+        @DefaultMessage
+    </div>
+}
+else
+{
+    <div class="card">
+                <BreedInformationCard BreedInformation="_petIdentificationCanonical.BreedInformation" />
+                <AdoptionCentresTable AdoptionCentres="_petIdentificationCanonical.AdoptionCentres" />
+    </div>
+
+}

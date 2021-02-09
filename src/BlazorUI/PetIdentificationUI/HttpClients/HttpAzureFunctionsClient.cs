@@ -2,8 +2,10 @@
 using PetIdentificationUI.Models;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
 
@@ -52,6 +54,56 @@ namespace PetIdentificationUI.HttpClients
             return connInfo;
 
 
+        }
+
+        public async Task<string> PostFormAsync(
+                Dictionary<string, string> keyValuePairs,
+                Stream stream,
+                string fileContentType
+            )
+        {
+
+            var form = new MultipartFormDataContent();
+
+            foreach (var pair in keyValuePairs)
+            {
+                form.Add(
+                        new StringContent(pair.Value)
+                        , pair.Key
+                    );
+            }
+
+
+            var fileContent = new ByteArrayContent(
+                    await ReadStreamAsync(stream)
+                    .ConfigureAwait(false)
+                );
+            fileContent.Headers.ContentType =
+                MediaTypeHeaderValue.Parse(fileContentType);
+
+            form.Add(fileContent, Guid.NewGuid().ToString(), "File");
+
+            var result = await _httpClient.PostAsync(
+                    "/api/HttpFormDataDurableClient",
+                    form)
+                .ConfigureAwait(false);
+
+            return 
+                await result.Content
+                .ReadAsStringAsync()
+                .ConfigureAwait(false);
+
+        }
+
+        private async Task<byte[]> ReadStreamAsync(Stream stream)
+        {
+            using (MemoryStream ms = new MemoryStream())
+            {
+                await stream.CopyToAsync(ms)
+                    .ConfigureAwait(false);
+
+                return ms.ToArray();
+            }
         }
     }
 }
