@@ -143,7 +143,7 @@ namespace PetIdentification.Functions
         #region DurableClient
         [FunctionName("HttpFormDataDurableClient")]
         public async Task<IActionResult> HttpUrlDurableClient(
-            [HttpTrigger(AuthorizationLevel.Function, "post")] HttpRequest request,
+            [HttpTrigger(AuthorizationLevel.Anonymous, "post")] HttpRequest request,
             [DurableClient] IDurableClient durableClient,
             ILogger logger
         )
