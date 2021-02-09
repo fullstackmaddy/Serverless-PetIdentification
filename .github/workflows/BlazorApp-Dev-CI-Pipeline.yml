@@ -41,11 +41,11 @@ jobs:
       
       # Run C# Unit Tests
       - name: Run C# Xunit Tests
-        run: dotnet test .src/BlazorUI/PetIdentificationUI.Tests/PetIdentificationUI.Tests.csproj --logger --results-directory TestResults
+        run: dotnet test .src/BlazorUI/PetIdentificationUI.Tests/PetIdentificationUI.Tests.csproj --logger html --results-directory TestResults
 
       # Run BUnit Blazor Tests
       - name: Run Blazor BUnit Tests
-        run: dotnet test .src/BlazorUI/PetIdentificationUI.UITests/PetIdentificationUI.UITests.csproj --logger --results-directory TestResults
+        run: dotnet test .src/BlazorUI/PetIdentificationUI.UITests/PetIdentificationUI.UITests.csproj --logger html --results-directory TestResults
 
       # Upload the test results as artifacts
       - name: Upload Test results
