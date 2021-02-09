@@ -95,7 +95,7 @@ namespace PetIdentification.Functions
 
         [FunctionName(ActivityFunctionsConstants.IdentifyStrayPetBreedWithStreamAsync)]
         public async Task<List<PredictionResult>> IdentifyStrayPetBreedWithStreamAsync(
-        [ActivityTrigger] Stream s,
+        [ActivityTrigger] string imageBase64String,
         ILogger logger)
         {
             logger.LogInformation(
@@ -108,11 +108,11 @@ namespace PetIdentification.Functions
                 LoggingConstants.ProcessStatus.Started.ToString(),
                 "Execution Started."
                 );
-            
 
-            var result = await _predictionHelper.PredictBreedAsync(s).ConfigureAwait(false);
-
-            logger.LogInformation(
+            using (MemoryStream ms = new MemoryStream(Convert.FromBase64String(imageBase64String)))
+            {
+                var result = await _predictionHelper.PredictBreedAsync(ms).ConfigureAwait(false);
+                logger.LogInformation(
                 new EventId((int)LoggingConstants.EventId.IdentifyStrayPetBreedWithStreamAsyncFinished),
                 LoggingConstants.Template,
                 LoggingConstants.EventId.IdentifyStrayPetBreedWithStreamAsyncFinished.ToString(),
@@ -123,7 +123,9 @@ namespace PetIdentification.Functions
                 "Execution Finished."
                 );
 
-            return result.ToList(); ;
+                return result.ToList();
+            }
+
         }
 
 

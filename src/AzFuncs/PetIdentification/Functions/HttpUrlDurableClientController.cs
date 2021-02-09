@@ -65,10 +65,17 @@ namespace PetIdentification.Functions
 
 
 
-                var predictions = await context.CallActivityAsync<List<PredictionResult>>
-                (ActivityFunctionsConstants.IdentifyStrayPetBreedWithUrlAsync,
-                durableReqDto.BlobUrl.ToString());
-                
+                var retryOption = new RetryOptions(
+                       firstRetryInterval: TimeSpan.FromMilliseconds(200),
+                       maxNumberOfAttempts: 3
+                   );
+
+
+                var predictions = await context.CallActivityWithRetryAsync<List<PredictionResult>>
+                    (ActivityFunctionsConstants.IdentifyStrayPetBreedWithUrlAsync,
+                    retryOption,
+                    durableReqDto.BlobUrl.AbsoluteUri);
+
 
                 var highestPrediction = predictions.OrderByDescending(x => x.Probability).FirstOrDefault();
 

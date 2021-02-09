@@ -83,13 +83,10 @@ namespace PetIdentification.Tests.UnitTests
         {
             List<PredictionResult> result;
 
-            using (Stream s = new MemoryStream())
-            {
-                 result = await _funcController
-                    .IdentifyStrayPetBreedWithStreamAsync(s, InstanceFactory.CreateLogger(LoggerTypes.List));
-            }
-            
+            result = await _funcController
+                    .IdentifyStrayPetBreedWithStreamAsync(string.Empty, InstanceFactory.CreateLogger(LoggerTypes.List));
 
+            
             //Assertions
 
             result.Should().BeOfType<List<PredictionResult>>();

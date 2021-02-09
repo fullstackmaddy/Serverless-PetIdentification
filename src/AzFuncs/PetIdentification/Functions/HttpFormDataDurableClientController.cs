@@ -50,6 +50,7 @@ namespace PetIdentification.Functions
             ILogger logger
         )
         {
+
             try
             {
                 logger.LogInformation(
@@ -63,25 +64,23 @@ namespace PetIdentification.Functions
                         "Execution started."
                         );
 
+                var image = context.GetInput<string>();
 
-                //var imageUrl = context.GetInput<string>();
-
-                var imageFile = context.GetInput<IFormFile>();
-
+                var retryOption = new RetryOptions(
+                        firstRetryInterval: TimeSpan.FromMilliseconds(200),
+                        maxNumberOfAttempts: 3
+                    );
+                
                 List<PredictionResult> predictions;
-
-                using (MemoryStream ms = new MemoryStream())
-                {
-                    await imageFile.CopyToAsync(ms);
-
-                    predictions = await context
-                        .CallActivityAsync<List<PredictionResult>>(
+                predictions = await context
+                        .CallActivityWithRetryAsync<List<PredictionResult>>(
                             ActivityFunctionsConstants.IdentifyStrayPetBreedWithStreamAsync,
-                            ms
+                            retryOption,
+                            image
                         );
-                }
 
-                var highestPrediction = predictions.OrderBy(x => x.Probability).FirstOrDefault();
+                var highestPrediction = predictions
+                    .OrderByDescending(x => x.Probability).FirstOrDefault();
 
                 if (highestPrediction == null)
                     throw new Exception("Unable to predict the tag");
@@ -108,16 +107,6 @@ namespace PetIdentification.Functions
                     .Map<PetIdentificationCanonical, PetIdentificationCanonicalDto>
                     (petIdentificationCanonical);
 
-                var signalRRequest = new SignalRRequest()
-                {
-                    Message = JsonConvert.SerializeObject(petIdentificationCanonicalDto),
-                    UserId = _signalRUserId
-                };
-
-                await context.CallActivityAsync(
-                    ActivityFunctionsConstants.PushMessagesToSignalRHub,
-                    signalRRequest);
-
                 logger.LogInformation(
                     new EventId((int)LoggingConstants.EventId.HttpFormDataOrchestrationFinished),
                     LoggingConstants.Template,
@@ -129,7 +118,7 @@ namespace PetIdentification.Functions
                     "Execution Finished."
                     );
 
-                return "Orchestrator sucessfully executed the functions.";
+                return JsonConvert.SerializeObject(petIdentificationCanonicalDto);
             }
             catch (Exception ex)
             {
@@ -166,8 +155,8 @@ namespace PetIdentification.Functions
                 return new UnsupportedMediaTypeResult();
             }
 
-            var file = request.Form.Files[0];
-            _signalRUserId = request.Form["signalRUserId"];
+            FormFile file = request.Form.Files[0] as FormFile;
+
             _correlationId = request.Form["correlationId"];
 
             List<string> allowedFileExtensions = new List<string>()
@@ -178,9 +167,6 @@ namespace PetIdentification.Functions
 
             if (!allowedFileExtensions.Contains(file.ContentType))
                 return new BadRequestObjectResult("Only jpeg and png images are supported."); ;
-
-            if (string.IsNullOrWhiteSpace(_signalRUserId))
-                return new BadRequestObjectResult("SignalRUserId field is mandatory.");
 
             if (string.IsNullOrEmpty(_correlationId))
                 return new BadRequestObjectResult("CorrelationId field is mandatory.");
@@ -199,21 +185,53 @@ namespace PetIdentification.Functions
                 "Execution started."
                 );
 
+                var instanceId = Guid.NewGuid().ToString();
+
                 await durableClient
-                    .StartNewAsync("HttpFormDataOrchestration", instanceId: new Guid().ToString(), file);
+                    .StartNewAsync("HttpFormDataOrchestration",
+                    instanceId: instanceId,
+                    Convert.ToBase64String(
+                    await GetByteArrayFromFormFileAsync(file)
+                    .ConfigureAwait(false)));
 
-                logger.LogInformation(
-                new EventId((int)LoggingConstants.EventId.HttpFormDataDurableClientFinished),
-                LoggingConstants.Template,
-                LoggingConstants.EventId.HttpFormDataDurableClientFinished.ToString(),
-                _correlationId,
-                LoggingConstants.ProcessingFunction.HttpFormDataDurableClient.ToString(),
-                LoggingConstants.FunctionType.Client.ToString(),
-                LoggingConstants.ProcessStatus.Finished.ToString(),
-                "Execution finished."
-                );
+                var orchestrationStatus = await durableClient.GetStatusAsync(instanceId);
 
-                return new AcceptedResult();
+               
+
+                while (orchestrationStatus.RuntimeStatus == OrchestrationRuntimeStatus.Running
+                    || orchestrationStatus.RuntimeStatus == OrchestrationRuntimeStatus.Pending)
+                {
+                    await Task.Delay(200);
+                    orchestrationStatus = await durableClient.GetStatusAsync(instanceId);
+
+                    logger.LogInformation($"Orchestration status {orchestrationStatus.RuntimeStatus.ToString()}");
+                }
+
+                if (orchestrationStatus.RuntimeStatus == OrchestrationRuntimeStatus.Completed)
+                {
+                    logger.LogInformation(
+                        new EventId((int)LoggingConstants.EventId.HttpFormDataDurableClientFinished),
+                        LoggingConstants.Template,
+                        LoggingConstants.EventId.HttpFormDataDurableClientFinished.ToString(),
+                        _correlationId,
+                        LoggingConstants.ProcessingFunction.HttpFormDataDurableClient.ToString(),
+                        LoggingConstants.FunctionType.Client.ToString(),
+                        LoggingConstants.ProcessStatus.Finished.ToString(),
+                        "Execution finished."
+                        );
+                    return new ContentResult()
+                    {
+                        ContentType = "application/json",
+                        Content = orchestrationStatus.Output.ToString(),
+                        StatusCode = 200,
+                    };
+                }
+                else
+                {
+                    throw new Exception("Error executing orchestration");
+                }
+
+
             }
             catch (Exception ex)
             {
@@ -233,6 +251,21 @@ namespace PetIdentification.Functions
 
             }
 
+        }
+
+        #endregion
+
+        #region PrivateMethods
+
+        private async Task<byte[]> GetByteArrayFromFormFileAsync(IFormFile file)
+        {
+            using (MemoryStream ms = new MemoryStream())
+            {
+                await file.CopyToAsync(ms)
+                    .ConfigureAwait(false);
+
+                return ms.ToArray();
+            }
         }
 
         #endregion

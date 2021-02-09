@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using Microsoft.Extensions.Primitives;
 using Moq;
+using Newtonsoft.Json;
 using PetIdentification.Constants;
 using PetIdentification.Dtos;
 using PetIdentification.Functions;
@@ -41,11 +42,18 @@ namespace PetIdentification.Tests.UnitTests
                     SignalRUserId = "123"
                 }
             );
+            
             _orchestrationContext.Setup(
-                x => x.CallActivityAsync<List<PredictionResult>>
-                (ActivityFunctionsConstants.IdentifyStrayPetBreedWithStreamAsync, It.IsAny<Stream>())
+                    x => x.CallActivityWithRetryAsync<List<PredictionResult>>
+                    (
+                        ActivityFunctionsConstants.IdentifyStrayPetBreedWithStreamAsync,
+                        It.IsAny<RetryOptions>(),
+                        It.IsAny<string>()
 
-            ).ReturnsAsync(InstanceFactory.PredictedTags);
+                    )
+                )
+                .ReturnsAsync(InstanceFactory.PredictedTags);
+
 
             _orchestrationContext.Setup(
                 x => x.CallActivityAsync<List<AdoptionCentre>>(
@@ -86,7 +94,15 @@ namespace PetIdentification.Tests.UnitTests
             result.Should()
                   .BeOfType<string>();
             result.Should()
-                .Be("Orchestrator sucessfully executed the functions.");
+                .Be(
+                    JsonConvert.SerializeObject(
+                            new PetIdentificationCanonical()
+                            {
+                                AdoptionCentres = InstanceFactory.AdoptionCentres,
+                                BreedInformation = InstanceFactory.BreedInfo
+                            }
+                        )
+                );
         }
 
         [Fact]
@@ -94,9 +110,15 @@ namespace PetIdentification.Tests.UnitTests
         {
             //Arrange
             _orchestrationContext.Setup(
-                x => x.CallActivityAsync<List<PredictionResult>>
-                (ActivityFunctionsConstants.IdentifyStrayPetBreedWithStreamAsync, It.IsAny<Stream>()))
-                .ThrowsAsync(InstanceFactory.Exception);
+                   x => x.CallActivityWithRetryAsync<List<PredictionResult>>
+                   (
+                       ActivityFunctionsConstants.IdentifyStrayPetBreedWithStreamAsync,
+                       It.IsAny<RetryOptions>(),
+                       It.IsAny<string>()
+
+                   )
+               )
+               .ThrowsAsync(InstanceFactory.Exception);
 
             //Act
 
@@ -167,30 +189,7 @@ namespace PetIdentification.Tests.UnitTests
                 .Should().BeEquivalentTo("Only jpeg and png images are supported.");
         }
 
-        [Fact]
-        public async Task Does_HTTP_DurableClient_Return_BadRequest_When_SignalRUserId_IsNotProvided()
-        {
-            var formFiles = new Dictionary<string, string>()
-            {
-                {@"../../../TestFiles/StrayPuppy.jpg", "image/jpeg"}
-            };
-            var formFields = new Dictionary<string, StringValues>();
-
-            var httpRequest = InstanceFactory
-                .CreateHttpRequest(string.Empty, string.Empty,
-                formFields, formFiles);
-
-            var result = await _funcController.HttpUrlDurableClient(
-                httpRequest,
-                _durableClient.Object,
-                InstanceFactory.CreateLogger());
-
-            result.Should().BeOfType<BadRequestObjectResult>();
-            (result as BadRequestObjectResult).Value
-                .Should().BeEquivalentTo("SignalRUserId field is mandatory.");
-
-        }
-
+        
         [Fact]
         public async Task Does_HTTP_DurableClient_Return_BadRequest_When_CorrelationId_IsNotProvided()
         {

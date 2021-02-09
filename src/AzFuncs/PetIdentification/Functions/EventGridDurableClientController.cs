@@ -55,8 +55,15 @@ namespace PetIdentification.Functions
 
                 var imageBlobUrl = context.GetInput<string>();
 
-                var predictions = await context.CallActivityAsync<List<PredictionResult>>
+                var retryOption = new RetryOptions(
+                       firstRetryInterval: TimeSpan.FromMilliseconds(200),
+                       maxNumberOfAttempts: 3
+                   );
+
+
+                var predictions = await context.CallActivityWithRetryAsync<List<PredictionResult>>
                     (ActivityFunctionsConstants.IdentifyStrayPetBreedWithUrlAsync,
+                    retryOption,
                     imageBlobUrl);
                 
                 _signalRUserId = await context.CallActivityAsync<string>(

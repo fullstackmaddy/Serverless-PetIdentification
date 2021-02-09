@@ -35,11 +35,15 @@ namespace PetIdentification.Tests.UnitTests
                     SignalRUserId = "123"
                 }
             );
-            _orchestrationContext.Setup(
-                x => x.CallActivityAsync<List<PredictionResult>>
-                (ActivityFunctionsConstants.IdentifyStrayPetBreedWithUrlAsync, It.IsAny<string>())
 
-            ).ReturnsAsync(InstanceFactory.PredictedTags);
+            _orchestrationContext.Setup(
+                    x => x.CallActivityWithRetryAsync<List<PredictionResult>>(
+                            ActivityFunctionsConstants.IdentifyStrayPetBreedWithUrlAsync,
+                            It.IsAny<RetryOptions>(),
+                            It.IsAny<string>()
+                        )
+                )
+                .ReturnsAsync(InstanceFactory.PredictedTags);
 
             _orchestrationContext.Setup(
                 x => x.CallActivityAsync<List<AdoptionCentre>>(
@@ -89,8 +93,12 @@ namespace PetIdentification.Tests.UnitTests
         {
             //Arrange
             _orchestrationContext.Setup(
-                x => x.CallActivityAsync<List<PredictionResult>>
-                (ActivityFunctionsConstants.IdentifyStrayPetBreedWithUrlAsync, It.IsAny<string>()))
+                        x => x.CallActivityWithRetryAsync<List<PredictionResult>>(
+                                ActivityFunctionsConstants.IdentifyStrayPetBreedWithUrlAsync,
+                                It.IsAny<RetryOptions>(),
+                                It.IsAny<string>()
+                            )
+                    )
                 .ThrowsAsync(InstanceFactory.Exception);
 
             //Act
