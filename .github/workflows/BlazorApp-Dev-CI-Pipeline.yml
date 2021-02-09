@@ -39,13 +39,9 @@ jobs:
       - name: MakeDirectory For XUnit results
         run: mkdir -p TestResults
       
-      # Run C# Unit Tests
-      - name: Run C# Xunit Tests
-        run: dotnet test .src/BlazorUI/PetIdentificationUI.Tests/PetIdentificationUI.Tests.csproj --logger html --results-directory TestResults
-
-      # Run BUnit Blazor Tests
-      - name: Run Blazor BUnit Tests
-        run: dotnet test .src/BlazorUI/PetIdentificationUI.UITests/PetIdentificationUI.UITests.csproj --logger html --results-directory TestResults
+      # Run C# Code and Blazor Component Unit Tests
+      - name: Run Unit Tests
+        run: dotnet test ${{env.SolutionPath}} --logger html --results-directory TestResults
 
       # Upload the test results as artifacts
       - name: Upload Test results

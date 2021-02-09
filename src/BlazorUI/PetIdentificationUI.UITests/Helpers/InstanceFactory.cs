@@ -52,7 +52,7 @@ namespace PetIdentificationUI.UITests.Helpers
           </div>
         </div>
         <div class:ignore>
-        </div>";
+        </div>"; 
 
     }
 }
