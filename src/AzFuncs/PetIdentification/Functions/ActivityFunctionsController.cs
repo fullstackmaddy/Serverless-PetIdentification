@@ -62,15 +62,17 @@ namespace PetIdentification.Functions
         #region ActivityFunctions
         [FunctionName(ActivityFunctionsConstants.IdentifyStrayPetBreedWithUrlAsync)]
         public async Task<List<PredictionResult>> IdentifyStrayPetBreedWithUrlAsync(
-            [ActivityTrigger] string imageUrl,
+            [ActivityTrigger] (string, string) tuple,
             ILogger logger)
         {
-            
+            var correlationId = tuple.Item1;
+            var imageUrl = tuple.Item2;
+
             logger.LogInformation(
                 new EventId((int)LoggingConstants.EventId.IdentifyStrayPetBreedWithUrlAsyncStarted),
                 LoggingConstants.Template,
                 LoggingConstants.EventId.IdentifyStrayPetBreedWithUrlAsyncStarted.ToString(),
-                _correlationId,
+                correlationId,
                 LoggingConstants.ProcessingFunction.IdentifyStrayPetBreedWithUrlAsync.ToString(),
                 LoggingConstants.FunctionType.Activity.ToString(),
                 LoggingConstants.ProcessStatus.Started.ToString(),
@@ -83,7 +85,7 @@ namespace PetIdentification.Functions
                 new EventId((int)LoggingConstants.EventId.IdentifyStrayPetBreedWithUrlAsyncFinished),
                 LoggingConstants.Template,
                 LoggingConstants.EventId.IdentifyStrayPetBreedWithUrlAsyncFinished.ToString(),
-                _correlationId,
+                correlationId,
                 LoggingConstants.ProcessingFunction.IdentifyStrayPetBreedWithUrlAsync.ToString(),
                 LoggingConstants.FunctionType.Activity.ToString(),
                 LoggingConstants.ProcessStatus.Finished.ToString(),
@@ -95,9 +97,12 @@ namespace PetIdentification.Functions
 
         [FunctionName(ActivityFunctionsConstants.IdentifyStrayPetBreedWithStreamAsync)]
         public async Task<List<PredictionResult>> IdentifyStrayPetBreedWithStreamAsync(
-        [ActivityTrigger] string imageBase64String,
+        [ActivityTrigger] (string, byte[])tuple,
         ILogger logger)
         {
+            var correlationId = tuple.Item1;
+            var imageBytes = tuple.Item2;
+
             logger.LogInformation(
                 new EventId((int)LoggingConstants.EventId.IdentifyStrayPetBreedWithStreamAsyncStarted),
                 LoggingConstants.Template,
@@ -109,7 +114,7 @@ namespace PetIdentification.Functions
                 "Execution Started."
                 );
 
-            using (MemoryStream ms = new MemoryStream(Convert.FromBase64String(imageBase64String)))
+            using (MemoryStream ms = new MemoryStream(imageBytes))
             {
                 var result = await _predictionHelper.PredictBreedAsync(ms).ConfigureAwait(false);
                 logger.LogInformation(
@@ -131,16 +136,19 @@ namespace PetIdentification.Functions
 
         [FunctionName(ActivityFunctionsConstants.LocateAdoptionCentresByBreedAsync)]
         public async Task<List<AdoptionCentre>> LocateAdoptionCentresByBreedAsync(
-            [ActivityTrigger] string breed,
+            [ActivityTrigger] (string, string) tuple,
             ILogger logger
         )
         {
+            var correlationId = tuple.Item1;
+            var breed = tuple.Item2;
+
             
             logger.LogInformation(
                 new EventId((int)LoggingConstants.EventId.LocateAdoptionCentresByBreedAsyncStarted),
                 LoggingConstants.Template,
                 LoggingConstants.EventId.LocateAdoptionCentresByBreedAsyncStarted.ToString(),
-                _correlationId,
+                correlationId,
                 LoggingConstants.ProcessingFunction.LocateAdoptionCentresByBreedAsync.ToString(),
                 LoggingConstants.FunctionType.Activity.ToString(),
                 LoggingConstants.ProcessStatus.Started.ToString(),
@@ -154,7 +162,7 @@ namespace PetIdentification.Functions
                 new EventId((int)LoggingConstants.EventId.LocateAdoptionCentresByBreedAsyncFinsihed),
                 LoggingConstants.Template,
                 LoggingConstants.EventId.LocateAdoptionCentresByBreedAsyncFinsihed.ToString(),
-                _correlationId,
+                correlationId,
                 LoggingConstants.ProcessingFunction.LocateAdoptionCentresByBreedAsync.ToString(),
                 LoggingConstants.FunctionType.Activity.ToString(),
                 LoggingConstants.ProcessStatus.Finished.ToString(),
@@ -167,15 +175,17 @@ namespace PetIdentification.Functions
 
         [FunctionName(ActivityFunctionsConstants.GetBreedInformationAsync)]
         public async Task<BreedInfo> GetBreedInformationASync(
-            [ActivityTrigger] string breed,
+            [ActivityTrigger] (string, string) tuple,
             ILogger logger)
         {
-            
+            var correlationId = tuple.Item1;
+            var breed = tuple.Item2;
+
             logger.LogInformation(
                 new EventId((int)LoggingConstants.EventId.GetBreedInformationAsyncStarted),
                 LoggingConstants.Template,
                 LoggingConstants.EventId.GetBreedInformationAsyncStarted.ToString(),
-                _correlationId,
+                correlationId,
                 LoggingConstants.ProcessingFunction.GetBreedInformationAsync.ToString(),
                 LoggingConstants.FunctionType.Activity.ToString(),
                 LoggingConstants.ProcessStatus.Started.ToString(),
@@ -190,7 +200,7 @@ namespace PetIdentification.Functions
                 new EventId((int)LoggingConstants.EventId.GetBreedInformationAsyncFinished),
                 LoggingConstants.Template,
                 LoggingConstants.EventId.GetBreedInformationAsyncFinished.ToString(),
-                _correlationId,
+                correlationId,
                 LoggingConstants.ProcessingFunction.GetBreedInformationAsync.ToString(),
                 LoggingConstants.FunctionType.Activity.ToString(),
                 LoggingConstants.ProcessStatus.Finished.ToString(),
@@ -207,6 +217,7 @@ namespace PetIdentification.Functions
             ILogger logger
         )
         {
+            
 
             #region DebugLog
             logger.LogDebug(
@@ -225,7 +236,7 @@ namespace PetIdentification.Functions
                 new EventId((int)LoggingConstants.EventId.PushMessagesToSignalRHubStarted),
                 LoggingConstants.Template,
                 LoggingConstants.EventId.PushMessagesToSignalRHubStarted.ToString(),
-                _correlationId,
+                request.CorrelationId,
                 LoggingConstants.ProcessingFunction.PushMessagesToSignalRHub.ToString(),
                 LoggingConstants.FunctionType.Activity.ToString(),
                 LoggingConstants.ProcessStatus.Started.ToString(),
@@ -246,7 +257,7 @@ namespace PetIdentification.Functions
                new EventId((int)LoggingConstants.EventId.PushMessagesToSignalRHubFinished),
                LoggingConstants.Template,
                LoggingConstants.EventId.PushMessagesToSignalRHubFinished.ToString(),
-               _correlationId,
+               request.CorrelationId,
                LoggingConstants.ProcessingFunction.PushMessagesToSignalRHub.ToString(),
                LoggingConstants.FunctionType.Activity.ToString(),
                LoggingConstants.ProcessStatus.Finished.ToString(),
@@ -259,15 +270,17 @@ namespace PetIdentification.Functions
 
         [FunctionName(ActivityFunctionsConstants.GetSignalUserIdFromBlobMetadataAsync)]
         public async Task<string> GetSignalUserIdFromBlobMetadataAsync(
-            [ActivityTrigger] string blobUrl,
+            [ActivityTrigger] (string, string) tuple,
             ILogger logger)
         {
+            var correlationId = tuple.Item1;
+            var blobUrl = tuple.Item2;
 
             logger.LogInformation(
                new EventId((int)LoggingConstants.EventId.GetSignalUserIdFromBlobMetadataAsyncStarted),
                LoggingConstants.Template,
                LoggingConstants.EventId.GetSignalUserIdFromBlobMetadataAsyncStarted.ToString(),
-               _correlationId,
+               correlationId,
                LoggingConstants.ProcessingFunction.GetSignalUserIdFromBlobMetadataAsync.ToString(),
                LoggingConstants.FunctionType.Activity.ToString(),
                LoggingConstants.ProcessStatus.Started.ToString(),
@@ -287,7 +300,7 @@ namespace PetIdentification.Functions
                new EventId((int)LoggingConstants.EventId.GetSignalUserIdFromBlobMetadataAsyncFinshed),
                LoggingConstants.Template,
                LoggingConstants.EventId.GetSignalUserIdFromBlobMetadataAsyncFinshed.ToString(),
-               _correlationId,
+               correlationId,
                LoggingConstants.ProcessingFunction.GetSignalUserIdFromBlobMetadataAsync.ToString(),
                LoggingConstants.FunctionType.Activity.ToString(),
                LoggingConstants.ProcessStatus.Finished.ToString(),

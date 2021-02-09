@@ -9,7 +9,9 @@ namespace PetIdentification.Models
         
         public string UserId { get; set; }
 
+        public string CorrelationId { get; set; }
 
-        
+
+
     }
 }

@@ -24,8 +24,6 @@ namespace PetIdentification.Functions
         
         private readonly IMapper _mapper;
 
-        private string _correlationId;
-        
         #endregion
 
         #region Constructors
@@ -48,25 +46,24 @@ namespace PetIdentification.Functions
             ILogger logger
         )
         {
+            var durableReqDto = context.GetInput<DurableRequestDto>();
+            var correlationId = durableReqDto.CorrelationId;
+
             try
             {
                 logger.LogInformation(
                         new EventId((int)LoggingConstants.EventId.HttpUrlOrchestrationStarted),
                         LoggingConstants.Template,
                         LoggingConstants.EventId.HttpUrlOrchestrationStarted.ToString(),
-                        _correlationId,
+                        correlationId,
                         LoggingConstants.ProcessingFunction.HttpUrlOrchestration.ToString(),
                         LoggingConstants.FunctionType.Orchestration.ToString(),
                         LoggingConstants.ProcessStatus.Started.ToString(),
                         "Execution started."
                         );
 
-                var durableReqDto = context.GetInput<DurableRequestDto>();
-
-
-
                 var retryOption = new RetryOptions(
-                       firstRetryInterval: TimeSpan.FromMilliseconds(200),
+                       firstRetryInterval: TimeSpan.FromMilliseconds(400),
                        maxNumberOfAttempts: 3
                    );
 
@@ -74,7 +71,8 @@ namespace PetIdentification.Functions
                 var predictions = await context.CallActivityWithRetryAsync<List<PredictionResult>>
                     (ActivityFunctionsConstants.IdentifyStrayPetBreedWithUrlAsync,
                     retryOption,
-                    durableReqDto.BlobUrl.AbsoluteUri);
+                    (correlationId,
+                    durableReqDto.BlobUrl.AbsoluteUri));
 
 
                 var highestPrediction = predictions.OrderByDescending(x => x.Probability).FirstOrDefault();
@@ -83,14 +81,14 @@ namespace PetIdentification.Functions
 
                 var adoptionCentres = await context.CallActivityAsync<List<AdoptionCentre>>(
                         ActivityFunctionsConstants.LocateAdoptionCentresByBreedAsync,
-                        tagName
+                        (correlationId, tagName)
                     );
 
 
 
                 var breedInfo = await context.CallActivityAsync<BreedInfo>(
                         ActivityFunctionsConstants.GetBreedInformationAsync,
-                        tagName
+                        (correlationId, tagName)
                     );
                   
 
@@ -108,7 +106,8 @@ namespace PetIdentification.Functions
                 var signalRRequest = new SignalRRequest()
                 {
                     Message = JsonConvert.SerializeObject(petIdentificationCanonicalDto),
-                    UserId = durableReqDto.SignalRUserId
+                    UserId = durableReqDto.SignalRUserId,
+                    CorrelationId = correlationId
                 };
 
                 await context.CallActivityAsync(ActivityFunctionsConstants.PushMessagesToSignalRHub,
@@ -118,7 +117,7 @@ namespace PetIdentification.Functions
                    new EventId((int)LoggingConstants.EventId.HttpUrlOrchestrationFinished),
                    LoggingConstants.Template,
                    LoggingConstants.EventId.HttpUrlOrchestrationFinished.ToString(),
-                   _correlationId,
+                   correlationId,
                    LoggingConstants.ProcessingFunction.HttpUrlOrchestration.ToString(),
                    LoggingConstants.FunctionType.Orchestration.ToString(),
                    LoggingConstants.ProcessStatus.Finished.ToString(),
@@ -134,7 +133,7 @@ namespace PetIdentification.Functions
                    new EventId((int)LoggingConstants.EventId.HttpUrlOrchestrationFinished),
                    LoggingConstants.Template,
                    LoggingConstants.EventId.HttpUrlOrchestrationFinished.ToString(),
-                   _correlationId,
+                   correlationId,
                    LoggingConstants.ProcessingFunction.HttpUrlOrchestration.ToString(),
                    LoggingConstants.FunctionType.Orchestration.ToString(),
                    LoggingConstants.ProcessStatus.Failed.ToString(),
@@ -173,6 +172,7 @@ namespace PetIdentification.Functions
 
             DurableRequestDto durableReqDto;
             var requestBody = string.Empty;
+
             using (StreamReader reader = new StreamReader(request.Body))
             {
                 requestBody = await reader.ReadToEndAsync();
@@ -188,7 +188,7 @@ namespace PetIdentification.Functions
                 return new BadRequestObjectResult("Mandatory fields not provided.");
             }
 
-           _correlationId = durableReqDto.CorrelationId;
+           var correlationId = durableReqDto.CorrelationId;
 
             try
             {
@@ -199,7 +199,7 @@ namespace PetIdentification.Functions
                     new EventId((int)LoggingConstants.EventId.HttpUrlDurableClientStarted),
                     LoggingConstants.Template,
                     LoggingConstants.EventId.HttpUrlDurableClientStarted.ToString(),
-                    _correlationId,
+                    correlationId,
                     LoggingConstants.ProcessingFunction.HttpUrlDurableClient.ToString(),
                     LoggingConstants.FunctionType.Client.ToString(),
                     LoggingConstants.ProcessStatus.Started.ToString(),
@@ -216,7 +216,7 @@ namespace PetIdentification.Functions
                    new EventId((int)LoggingConstants.EventId.HttpUrlDurableClientFinished),
                    LoggingConstants.Template,
                    LoggingConstants.EventId.HttpUrlDurableClientFinished.ToString(),
-                   _correlationId,
+                   correlationId,
                    LoggingConstants.ProcessingFunction.HttpUrlDurableClient.ToString(),
                    LoggingConstants.FunctionType.Client.ToString(),
                    LoggingConstants.ProcessStatus.Finished.ToString(),
@@ -231,7 +231,7 @@ namespace PetIdentification.Functions
                    new EventId((int)LoggingConstants.EventId.HttpUrlDurableClientFinished),
                    LoggingConstants.Template,
                    LoggingConstants.EventId.HttpUrlDurableClientFinished.ToString(),
-                   _correlationId,
+                   correlationId,
                    LoggingConstants.ProcessingFunction.HttpUrlDurableClient.ToString(),
                    LoggingConstants.FunctionType.Client.ToString(),
                    LoggingConstants.ProcessStatus.Failed.ToString(),

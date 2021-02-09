@@ -40,7 +40,7 @@ namespace PetIdentification.Tests.UnitTests
                     x => x.CallActivityWithRetryAsync<List<PredictionResult>>(
                             ActivityFunctionsConstants.IdentifyStrayPetBreedWithUrlAsync,
                             It.IsAny<RetryOptions>(),
-                            It.IsAny<string>()
+                            It.IsAny<(string,string)>()
                         )
                 )
                 .ReturnsAsync(InstanceFactory.PredictedTags);
@@ -48,7 +48,7 @@ namespace PetIdentification.Tests.UnitTests
             _orchestrationContext.Setup(
                 x => x.CallActivityAsync<List<AdoptionCentre>>(
                         ActivityFunctionsConstants.LocateAdoptionCentresByBreedAsync,
-                        It.IsAny<string>())
+                        It.IsAny<(string, string)>())
                 ).ReturnsAsync(InstanceFactory.AdoptionCentres);
 
             _orchestrationContext.Setup(
@@ -59,7 +59,7 @@ namespace PetIdentification.Tests.UnitTests
             _orchestrationContext.Setup(
                     x => x.CallActivityAsync<BreedInfo>(
                         ActivityFunctionsConstants.GetBreedInformationAsync,
-                        It.IsAny<string>())
+                        It.IsAny<(string, string)>())
                 ).ReturnsAsync(InstanceFactory.BreedInfo);
 
             _orchestrationContext.Setup(
@@ -96,7 +96,7 @@ namespace PetIdentification.Tests.UnitTests
                         x => x.CallActivityWithRetryAsync<List<PredictionResult>>(
                                 ActivityFunctionsConstants.IdentifyStrayPetBreedWithUrlAsync,
                                 It.IsAny<RetryOptions>(),
-                                It.IsAny<string>()
+                                It.IsAny<(string, string)>()
                             )
                     )
                 .ThrowsAsync(InstanceFactory.Exception);

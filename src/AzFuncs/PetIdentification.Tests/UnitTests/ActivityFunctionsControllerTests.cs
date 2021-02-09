@@ -17,13 +17,13 @@ namespace PetIdentification.Tests.UnitTests
 {
     public class ActivityFunctionsControllerTests
     {
-        
+
         private readonly Mock<IPredictionHelper> _predictionHelper;
         private readonly Mock<IAdoptionCentreDbHelper> _adoptionCentreDbHelper;
         private readonly Mock<IBreedInfoDbHelper> _breedInfoDbHelper;
         private readonly Mock<IBlobHelper> _blobHelper;
         private readonly ActivityFunctionsController _funcController;
-        
+
         public ActivityFunctionsControllerTests()
         {
 
@@ -66,8 +66,11 @@ namespace PetIdentification.Tests.UnitTests
         public async Task Does_IdentifyStrayPetBreedWithUrlAsync_Return_Prediction_Result()
         {
 
+
             var result = await _funcController
-            .IdentifyStrayPetBreedWithUrlAsync(string.Empty, InstanceFactory.CreateLogger(LoggerTypes.List));
+            .IdentifyStrayPetBreedWithUrlAsync(
+                (string.Empty, string.Empty),
+                 InstanceFactory.CreateLogger(LoggerTypes.List));
 
             //Assertions
 
@@ -84,9 +87,9 @@ namespace PetIdentification.Tests.UnitTests
             List<PredictionResult> result;
 
             result = await _funcController
-                    .IdentifyStrayPetBreedWithStreamAsync(string.Empty, InstanceFactory.CreateLogger(LoggerTypes.List));
+                    .IdentifyStrayPetBreedWithStreamAsync((string.Empty,new byte[1]), InstanceFactory.CreateLogger(LoggerTypes.List));
 
-            
+
             //Assertions
 
             result.Should().BeOfType<List<PredictionResult>>();
@@ -101,7 +104,7 @@ namespace PetIdentification.Tests.UnitTests
         public async Task Does_LocateAdoptionCentresByBreedAsync_Return_List_Of_AdoptionCentres()
         {
             var result = await _funcController
-            .LocateAdoptionCentresByBreedAsync(string.Empty, InstanceFactory.CreateLogger(LoggerTypes.List));
+            .LocateAdoptionCentresByBreedAsync((string.Empty, string.Empty), InstanceFactory.CreateLogger(LoggerTypes.List));
 
             //Assertions
 
@@ -114,7 +117,7 @@ namespace PetIdentification.Tests.UnitTests
         public async Task Does_GetBreedInformationAsync_Return_Breed_Information()
         {
             var result = await _funcController
-                .GetBreedInformationASync(string.Empty,
+                .GetBreedInformationASync((string.Empty, string.Empty),
                 InstanceFactory.CreateLogger());
 
             result.Should().BeOfType<BreedInfo>();

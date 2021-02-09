@@ -25,7 +25,6 @@ namespace PetIdentification.Functions
 
         private string _signalRUserId;
 
-        private string _correlationId;
         public EventGridDurableClientController(IMapper mapper)
         {
             _mapper = mapper ??
@@ -40,23 +39,26 @@ namespace PetIdentification.Functions
             ILogger logger
         )
         {
+            var tuple = context.GetInput<(string, string)>();
+
+            var correlationId = tuple.Item1;
+            var imageBlobUrl = tuple.Item2;
+            
             try
             {
                 logger.LogInformation(
                 new EventId((int)LoggingConstants.EventId.EventGridDurableOrchestrationStarted),
                 LoggingConstants.Template,
                 LoggingConstants.EventId.EventGridDurableOrchestrationStarted.ToString(),
-                _correlationId,
+                correlationId,
                 LoggingConstants.ProcessingFunction.EventGridDurableOrchestration.ToString(),
                 LoggingConstants.FunctionType.Orchestration.ToString(),
                 LoggingConstants.ProcessStatus.Started.ToString(),
                 "Execution started."
                 );
 
-                var imageBlobUrl = context.GetInput<string>();
-
                 var retryOption = new RetryOptions(
-                       firstRetryInterval: TimeSpan.FromMilliseconds(200),
+                       firstRetryInterval: TimeSpan.FromMilliseconds(400),
                        maxNumberOfAttempts: 3
                    );
 
@@ -64,11 +66,11 @@ namespace PetIdentification.Functions
                 var predictions = await context.CallActivityWithRetryAsync<List<PredictionResult>>
                     (ActivityFunctionsConstants.IdentifyStrayPetBreedWithUrlAsync,
                     retryOption,
-                    imageBlobUrl);
+                    (correlationId,imageBlobUrl));
                 
                 _signalRUserId = await context.CallActivityAsync<string>(
                         ActivityFunctionsConstants.GetSignalUserIdFromBlobMetadataAsync,
-                        imageBlobUrl
+                        (correlationId, imageBlobUrl)
                     );
 
                 var highestPrediction = predictions.OrderByDescending(x => x.Probability).FirstOrDefault();
@@ -77,12 +79,12 @@ namespace PetIdentification.Functions
 
                 var adoptionCentres = await context.CallActivityAsync<List<AdoptionCentre>>(
                         ActivityFunctionsConstants.LocateAdoptionCentresByBreedAsync,
-                        tagName
+                        (correlationId,tagName)
                     );
 
                 var breedInfo = await context.CallActivityAsync<BreedInfo>(
                         ActivityFunctionsConstants.GetBreedInformationAsync,
-                        tagName
+                        (correlationId, tagName)
                     );
 
                 var petIdentificationCanonical = new
@@ -99,7 +101,8 @@ namespace PetIdentification.Functions
                 var signalRRequest = new SignalRRequest()
                 {
                     Message = JsonConvert.SerializeObject(petIdentificationCanonicalDto),
-                    UserId = _signalRUserId
+                    UserId = _signalRUserId,
+                    CorrelationId = correlationId
                 };
 
                 await context.CallActivityAsync(ActivityFunctionsConstants.PushMessagesToSignalRHub, signalRRequest);
@@ -108,7 +111,7 @@ namespace PetIdentification.Functions
                 new EventId((int)LoggingConstants.EventId.EventGridDurableOrchestrationFinsihed),
                 LoggingConstants.Template,
                 LoggingConstants.EventId.EventGridDurableOrchestrationFinsihed.ToString(),
-                _correlationId,
+                correlationId,
                 LoggingConstants.ProcessingFunction.EventGridDurableOrchestration.ToString(),
                 LoggingConstants.FunctionType.Orchestration.ToString(),
                 LoggingConstants.ProcessStatus.Finished.ToString(),
@@ -124,7 +127,7 @@ namespace PetIdentification.Functions
                 new EventId((int)LoggingConstants.EventId.EventGridDurableOrchestrationFinsihed),
                 LoggingConstants.Template,
                 LoggingConstants.EventId.EventGridDurableOrchestrationFinsihed.ToString(),
-                _correlationId,
+                correlationId,
                 LoggingConstants.ProcessingFunction.EventGridDurableOrchestration.ToString(),
                 LoggingConstants.FunctionType.Orchestration.ToString(),
                 LoggingConstants.ProcessStatus.Failed.ToString(),
@@ -147,19 +150,20 @@ namespace PetIdentification.Functions
             ILogger logger
         )
         {
+            StorageBlobCreatedEventData blobCreatedEventData =
+               ((JObject)eventGridEvent.Data).ToObject<StorageBlobCreatedEventData>();
+
+            var correlationId = GetBlobName(blobCreatedEventData.Url);
 
             try
             {
-                StorageBlobCreatedEventData blobCreatedEventData =
-                ((JObject)eventGridEvent.Data).ToObject<StorageBlobCreatedEventData>();
-
-                _correlationId = GetBlobName(blobCreatedEventData.Url);
+               
 
                 logger.LogInformation(
                 new EventId((int)LoggingConstants.EventId.EventGridDurableClientStarted),
                 LoggingConstants.Template,
                 LoggingConstants.EventId.EventGridDurableClientStarted.ToString(),
-                _correlationId,
+                correlationId,
                 LoggingConstants.ProcessingFunction.EventGridDurableClient.ToString(),
                 LoggingConstants.FunctionType.Client.ToString(),
                 LoggingConstants.ProcessStatus.Started.ToString(),
@@ -168,14 +172,15 @@ namespace PetIdentification.Functions
 
 
                 await client
-                 .StartNewAsync("EventGridDurableOrchestration", instanceId: Guid.NewGuid().ToString(), blobCreatedEventData.Url)
+                 .StartNewAsync("EventGridDurableOrchestration", instanceId: Guid.NewGuid().ToString(),
+                 (correlationId, blobCreatedEventData.Url))
                  .ConfigureAwait(false);
 
                 logger.LogInformation(
                 new EventId((int)LoggingConstants.EventId.EventGridDurableClientFinished),
                 LoggingConstants.Template,
                 LoggingConstants.EventId.EventGridDurableClientFinished.ToString(),
-                _correlationId,
+                correlationId,
                 LoggingConstants.ProcessingFunction.EventGridDurableClient.ToString(),
                 LoggingConstants.FunctionType.Client.ToString(),
                 LoggingConstants.ProcessStatus.Finished.ToString(),
@@ -188,7 +193,7 @@ namespace PetIdentification.Functions
                 new EventId((int)LoggingConstants.EventId.EventGridDurableClientFinished),
                 LoggingConstants.Template,
                 LoggingConstants.EventId.EventGridDurableClientFinished.ToString(),
-                _correlationId,
+                correlationId,
                 LoggingConstants.ProcessingFunction.EventGridDurableClient.ToString(),
                 LoggingConstants.FunctionType.Client.ToString(),
                 LoggingConstants.ProcessStatus.Failed.ToString(),

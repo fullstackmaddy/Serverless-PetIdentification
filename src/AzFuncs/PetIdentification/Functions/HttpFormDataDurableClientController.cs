@@ -23,11 +23,6 @@ namespace PetIdentification.Functions
         #region Properties&Fields
 
         private readonly IMapper _mapper;
-
-        private string _signalRUserId;
-
-        private string _correlationId;
-
         #endregion
 
         #region Constructors
@@ -51,23 +46,27 @@ namespace PetIdentification.Functions
         )
         {
 
+            var tuple = context.GetInput<(string, byte[])>();
+
+            var correlationId = tuple.Item1;
+            var imageBytes = tuple.Item2;
+
             try
             {
                 logger.LogInformation(
                         new EventId((int)LoggingConstants.EventId.HttpFormDataOrchestrationStarted),
                         LoggingConstants.Template,
                         LoggingConstants.EventId.HttpFormDataOrchestrationStarted.ToString(),
-                        _correlationId,
+                        correlationId,
                         LoggingConstants.ProcessingFunction.HttpFormDataOrchestration.ToString(),
                         LoggingConstants.FunctionType.Orchestration.ToString(),
                         LoggingConstants.ProcessStatus.Started.ToString(),
                         "Execution started."
                         );
 
-                var image = context.GetInput<string>();
 
                 var retryOption = new RetryOptions(
-                        firstRetryInterval: TimeSpan.FromMilliseconds(200),
+                        firstRetryInterval: TimeSpan.FromMilliseconds(400),
                         maxNumberOfAttempts: 3
                     );
                 
@@ -76,7 +75,7 @@ namespace PetIdentification.Functions
                         .CallActivityWithRetryAsync<List<PredictionResult>>(
                             ActivityFunctionsConstants.IdentifyStrayPetBreedWithStreamAsync,
                             retryOption,
-                            image
+                            (correlationId,Convert.ToBase64String(imageBytes))
                         );
 
                 var highestPrediction = predictions
@@ -89,11 +88,11 @@ namespace PetIdentification.Functions
 
                 var adoptionCentres = await context.CallActivityAsync<List<AdoptionCentre>>(
                         ActivityFunctionsConstants.LocateAdoptionCentresByBreedAsync,
-                        tagName
+                        ( correlationId, tagName)
                     );
                 var breedInfo = await context.CallActivityAsync<BreedInfo>(
                         ActivityFunctionsConstants.GetBreedInformationAsync,
-                        tagName
+                        (correlationId, tagName)
                     );
 
                 var petIdentificationCanonical = new
@@ -111,7 +110,7 @@ namespace PetIdentification.Functions
                     new EventId((int)LoggingConstants.EventId.HttpFormDataOrchestrationFinished),
                     LoggingConstants.Template,
                     LoggingConstants.EventId.HttpFormDataOrchestrationFinished.ToString(),
-                    _correlationId,
+                    correlationId,
                     LoggingConstants.ProcessingFunction.HttpFormDataOrchestration.ToString(),
                     LoggingConstants.FunctionType.Orchestration.ToString(),
                     LoggingConstants.ProcessStatus.Finished.ToString(),
@@ -127,7 +126,7 @@ namespace PetIdentification.Functions
                  new EventId((int)LoggingConstants.EventId.HttpFormDataOrchestrationFinished),
                  LoggingConstants.Template,
                  LoggingConstants.EventId.HttpFormDataOrchestrationFinished.ToString(),
-                 _correlationId,
+                 correlationId,
                  LoggingConstants.ProcessingFunction.HttpFormDataOrchestration.ToString(),
                  LoggingConstants.FunctionType.Orchestration.ToString(),
                  LoggingConstants.ProcessStatus.Failed.ToString(),
@@ -157,8 +156,6 @@ namespace PetIdentification.Functions
 
             FormFile file = request.Form.Files[0] as FormFile;
 
-            _correlationId = request.Form["correlationId"];
-
             List<string> allowedFileExtensions = new List<string>()
             {
                 "image/jpeg",
@@ -168,9 +165,11 @@ namespace PetIdentification.Functions
             if (!allowedFileExtensions.Contains(file.ContentType))
                 return new BadRequestObjectResult("Only jpeg and png images are supported."); ;
 
-            if (string.IsNullOrEmpty(_correlationId))
+            if (string.IsNullOrEmpty(request.Form["correlationId"]))
                 return new BadRequestObjectResult("CorrelationId field is mandatory.");
 
+
+            var correlationId = Guid.ParseExact(request.Form["correlationId"], "D").ToString(); ;
 
             try
             {
@@ -178,7 +177,7 @@ namespace PetIdentification.Functions
                 new EventId((int)LoggingConstants.EventId.HttpFormDataDurableClientStarted),
                 LoggingConstants.Template,
                 LoggingConstants.EventId.HttpFormDataDurableClientStarted.ToString(),
-                _correlationId,
+                correlationId,
                 LoggingConstants.ProcessingFunction.HttpFormDataDurableClient.ToString(),
                 LoggingConstants.FunctionType.Client.ToString(),
                 LoggingConstants.ProcessStatus.Started.ToString(),
@@ -190,9 +189,11 @@ namespace PetIdentification.Functions
                 await durableClient
                     .StartNewAsync("HttpFormDataOrchestration",
                     instanceId: instanceId,
-                    Convert.ToBase64String(
-                    await GetByteArrayFromFormFileAsync(file)
-                    .ConfigureAwait(false)));
+                    (
+                        correlationId,
+                        await GetByteArrayFromFormFileAsync(file)
+                        .ConfigureAwait(false)
+                    ));
 
                 var orchestrationStatus = await durableClient.GetStatusAsync(instanceId);
 
@@ -201,10 +202,9 @@ namespace PetIdentification.Functions
                 while (orchestrationStatus.RuntimeStatus == OrchestrationRuntimeStatus.Running
                     || orchestrationStatus.RuntimeStatus == OrchestrationRuntimeStatus.Pending)
                 {
-                    await Task.Delay(200);
+                    await Task.Delay(300);
                     orchestrationStatus = await durableClient.GetStatusAsync(instanceId);
 
-                    logger.LogInformation($"Orchestration status {orchestrationStatus.RuntimeStatus.ToString()}");
                 }
 
                 if (orchestrationStatus.RuntimeStatus == OrchestrationRuntimeStatus.Completed)
@@ -213,7 +213,7 @@ namespace PetIdentification.Functions
                         new EventId((int)LoggingConstants.EventId.HttpFormDataDurableClientFinished),
                         LoggingConstants.Template,
                         LoggingConstants.EventId.HttpFormDataDurableClientFinished.ToString(),
-                        _correlationId,
+                        correlationId,
                         LoggingConstants.ProcessingFunction.HttpFormDataDurableClient.ToString(),
                         LoggingConstants.FunctionType.Client.ToString(),
                         LoggingConstants.ProcessStatus.Finished.ToString(),
@@ -227,6 +227,7 @@ namespace PetIdentification.Functions
                     };
                 }
                 else
+                
                 {
                     throw new Exception("Error executing orchestration");
                 }
@@ -239,7 +240,7 @@ namespace PetIdentification.Functions
                 new EventId((int)LoggingConstants.EventId.HttpFormDataDurableClientFinished),
                 LoggingConstants.Template,
                 LoggingConstants.EventId.HttpFormDataDurableClientFinished.ToString(),
-                _correlationId,
+                correlationId,
                 LoggingConstants.ProcessingFunction.HttpFormDataDurableClient.ToString(),
                 LoggingConstants.FunctionType.Client.ToString(),
                 LoggingConstants.ProcessStatus.Failed.ToString(),
