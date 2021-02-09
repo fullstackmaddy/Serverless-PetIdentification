@@ -1,0 +1,56 @@
+name: BlazorApp-Dev-CI-Pipeline
+
+on:
+
+  push:
+    branches:
+      - dev
+    paths:
+      - '**/BlazorUI/**'
+
+jobs:
+  build-blazor-app-solution:
+
+  #build the code
+
+    runs-on: ubuntu-latest
+
+    env:
+      SolutionPath: ./src/BlazorUI/PetIdentificationUI.sln
+  
+      # define the steps of the job
+    steps:
+      
+      # Checkout the repository
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+      
+      #Setup dotnet core
+      - name:  Setup .NET
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: 3.1.x
+
+      # Build the code
+      - name: Build the code
+        run: dotnet build ${{env.SolutionPath}}
+      
+      # Setup directory for uploading test results
+      - name: MakeDirectory For XUnit results
+        run: mkdir -p TestResults
+      
+      # Run C# Unit Tests
+      - name: Run C# Xunit Tests
+        run: dotnet test .src/BlazorUI/PetIdentificationUI.Tests/PetIdentificationUI.Tests.csproj --logger --results-directory TestResults
+
+      # Run BUnit Blazor Tests
+      - name: Run Blazor BUnit Tests
+        run: dotnet test .src/BlazorUI/PetIdentificationUI.UITests/PetIdentificationUI.UITests.csproj --logger --results-directory TestResults
+
+      # Upload the test results as artifacts
+      - name: Upload Test results
+        uses: actions/upload-artifact@v2
+        with:
+          name : TestRunReports
+          path: TestResults
+      
