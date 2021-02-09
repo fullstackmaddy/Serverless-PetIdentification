@@ -348,3 +348,7 @@ MigrationBackup/
 
 # Ionide (cross platform F# VS Code tools) working folder
 .ionide/
+/src/AzFuncs/PetIdentification/Properties/ServiceDependencies/PetIdentification20210209190334 - Zip Deploy/appInsights1.arm.json
+/src/AzFuncs/PetIdentification/Properties/ServiceDependencies/PetIdentification20210209190334 - Zip Deploy/profile.arm.json
+/src/AzFuncs/PetIdentification/Properties/ServiceDependencies/PetIdentification20210209190334 - Zip Deploy/storage1.arm.json
+/src/AzFuncs/PetIdentification/Properties/serviceDependencies.PetIdentification20210209190334 - Zip Deploy.json
