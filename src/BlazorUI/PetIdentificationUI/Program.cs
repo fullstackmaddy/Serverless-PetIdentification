@@ -19,7 +19,10 @@ namespace PetIdentificationUI
 
             builder.Services.AddHttpClient<HttpAzureFunctionsClient>(
                     client =>
-                    client.BaseAddress = new Uri("https://petidentification20210209190334.azurewebsites.net")
+                    client.BaseAddress = new Uri(
+                            builder.Configuration["functionsEndpoint"]
+                            .ToString()
+                        )
                 ); ;
 
             builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
