@@ -352,3 +352,4 @@ MigrationBackup/
 /src/AzFuncs/PetIdentification/Properties/ServiceDependencies/PetIdentification20210209190334 - Zip Deploy/profile.arm.json
 /src/AzFuncs/PetIdentification/Properties/ServiceDependencies/PetIdentification20210209190334 - Zip Deploy/storage1.arm.json
 /src/AzFuncs/PetIdentification/Properties/serviceDependencies.PetIdentification20210209190334 - Zip Deploy.json
+/src/BlazorUI/PetIdentificationUI/Properties/launchSettings.json
