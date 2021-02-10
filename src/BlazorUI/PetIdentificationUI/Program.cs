@@ -31,9 +31,10 @@ namespace PetIdentificationUI
 
             builder.Services.AddSingleton<BlobServiceClient>(
                     new BlobServiceClient(
-                        builder.Configuration
+                        new Uri(builder.Configuration
                         ["storageConnectionString"]
-                        .ToString())
+                        .ToString()),
+                        null)
                 );
 
             

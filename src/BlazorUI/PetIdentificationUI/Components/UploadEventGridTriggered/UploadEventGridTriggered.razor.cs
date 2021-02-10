@@ -4,6 +4,7 @@ using Newtonsoft.Json;
 using PetIdentificationUI.HttpClients;
 using PetIdentificationUI.Models;
 using System;
+using System.IO;
 using System.Threading.Tasks;
 
 namespace PetIdentificationUI.Components.UploadEventGridTriggered
@@ -11,6 +12,8 @@ namespace PetIdentificationUI.Components.UploadEventGridTriggered
     public partial class UploadEventGridTriggered : ComponentBase
     {
         string blobUrl;
+
+        private string correlationId;
 
         [Inject] public HttpAzureFunctionsClient HttpAzureFunctionsClient {get; set;}
 
@@ -54,9 +57,7 @@ namespace PetIdentificationUI.Components.UploadEventGridTriggered
                              HttpAzureFunctionsClient
                              .GetHubConnectionInformationAsync(userId)
                              .ConfigureAwait(false);
-            Console.WriteLine($"Connection Info {userId}");
-            Console.WriteLine($"url {connectionInfo.Url}");
-
+            
             //Build hb connection
             _hubConnection = new HubConnectionBuilder()
                 .WithUrl(
@@ -74,6 +75,13 @@ namespace PetIdentificationUI.Components.UploadEventGridTriggered
         {
             await _hubConnection.DisposeAsync()
                 .ConfigureAwait(false);
+        }
+
+        public void GetBlobName(string blobUrl)
+        {
+
+            correlationId =  Path.GetFileNameWithoutExtension(blobUrl);
+
         }
 
 

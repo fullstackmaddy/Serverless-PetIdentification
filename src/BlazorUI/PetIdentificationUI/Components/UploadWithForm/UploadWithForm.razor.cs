@@ -21,6 +21,8 @@ namespace PetIdentificationUI.Components.UploadWithForm
 
         PetIdentificationCanonical _petIdentificationCanonical = null;
 
+        private string  correlationId = Guid.NewGuid().ToString();
+
 
         public async Task UploadImageAsync(IFileListEntry[] files)
         {
@@ -33,7 +35,7 @@ namespace PetIdentificationUI.Components.UploadWithForm
                     .PostFormAsync(
                         new Dictionary<string, string>()
                         {
-                            {"correlationId", Guid.NewGuid().ToString() },
+                            {"correlationId", correlationId },
                             {"signalRUserId", Guid.NewGuid().ToString() }
                         },
                         file.Data,
